@@ -4,15 +4,13 @@ import { useTheme } from '@mui/material/styles';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import dynamic from "next/dynamic";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
+const AMOUNT_OF_DAYS = 8;
 
+const GeneralValues = () => {
+    const [metric, setMetric] = React.useState(1); // 1: Temperatura, 2: Humedad, 3: Presión
 
-const SalesOverview = () => {
-
-    // select
-    const [month, setMonth] = React.useState('1');
-
-    const handleChange = (event: any) => {
-        setMonth(event.target.value);
+    const handleDashboardChange = (event: any) => {
+        setMetric(event.target.value);
     };
 
     // chart color
@@ -32,71 +30,46 @@ const SalesOverview = () => {
             height: 370,
         },
         colors: [primary, secondary],
-        // plotOptions: {
-        //     bar: {
-        //         horizontal: false,
-        //         barHeight: '60%',
-        //         columnWidth: '42%',
-        //         borderRadius: [6],
-        //         borderRadiusApplication: 'end',
-        //         borderRadiusWhenStacked: 'all',
-        //     },
-        // },
-
-        // stroke: {
-        //     show: true,
-        //     width: 5,
-        //     lineCap: "butt",
-        //     colors: ["transparent"],
-        //   },
-        // dataLabels: {
-        //     enabled: false,
-        // },
-        // legend: {
-        //     show: false,
-        // },
-        // grid: {
-        //     borderColor: 'rgba(0,0,0,0.1)',
-        //     strokeDashArray: 3,
-        //     xaxis: {
-        //         lines: {
-        //             show: false,
-        //         },
-        //     },
-        // },
-        // yaxis: {
-        //     tickAmount: 4,
-        // },
         xaxis: {
+
             categories: ['16/08', '17/08', '18/08', '19/08', '20/08', '21/08', '22/08', '23/08'],
             axisBorder: {
                 show: false,
             },
         },
-        // tooltip: {
-        //     theme: 'dark',
-        //     fillSeriesColor: false,
-        // },
     };
-    const seriescolumnchart: any = [ // aca llamar al back para conseguir los datos
-        {
-            name: 'ESP 1',
-            data: [-0.7,0.1,0.0,-1.5,-2.3,0.4,0.5,0.6],
-        },
-        {
-            name: 'ESP 2',
-            data: [-0.2,0.4,0.4,-0.4,0.5,-0.3,2.5,1.6],
-        },
-    ];
+
+    const data = {
+        temperature: [
+            { name: 'ESP 1', data: [22.3, 23.1, 21.9, 20.8, 22.0, 23.5, 24.1, 22.9] },
+            { name: 'ESP 2', data: [21.8, 22.0, 22.5, 22.3, 23.0, 23.3, 22.8, 23.1] },
+        ],
+        humidity: [
+            { name: 'ESP 1', data: [65, 60, 62, 58, 64, 66, 63, 61] },
+            { name: 'ESP 2', data: [60, 63, 64, 62, 65, 67, 61, 64] },
+        ],
+        pressure: [
+            { name: 'ESP 1', data: [1012, 1013, 1011, 1010, 1012, 1014, 1015, 1013] },
+            { name: 'ESP 2', data: [1011, 1012, 1013, 1011, 1010, 1013, 1014, 1012] },
+        ],
+    };
+    
+    // Selección de serie según la métrica
+    const seriescolumnchart = React.useMemo(() => {
+        if (metric === 1) return data.temperature;
+        if (metric === 2) return data.humidity;
+        return data.pressure;
+    }, [data.humidity, data.pressure, data.temperature, metric]);
+
 
     return (
         <DashboardCard title="Valores Generales" action={
             <Select
                 labelId="month-dd"
                 id="month-dd"
-                value={month}
+                value={metric}
                 size="small"
-                onChange={handleChange}
+                onChange={handleDashboardChange}
             >
                 <MenuItem value={1}>Temperatura</MenuItem>
                 <MenuItem value={2}>Humedad</MenuItem>
@@ -113,4 +86,4 @@ const SalesOverview = () => {
     );
 };
 
-export default SalesOverview;
+export default GeneralValues;

@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 import { useTheme } from '@mui/material/styles';
 import { Stack, Typography, Avatar, Fab } from '@mui/material';
-import { IconArrowDownRight, IconTemperatureCelsius } from '@tabler/icons-react';
+import { IconArrowDownRight, IconArrowUpRight ,IconTemperatureCelsius } from '@tabler/icons-react';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 
 const PromedioTemperatura = () => {
@@ -48,7 +48,7 @@ const PromedioTemperatura = () => {
     {
       name: '',
       color: secondary,
-      data: [25, 66, 20, 40, 12, 58, 20],
+      data: [0.3, 0.2, 0.15, -0.05, 0.3],
     },
   ];
 
@@ -70,10 +70,10 @@ const PromedioTemperatura = () => {
         </Typography>
         <Stack direction="row" spacing={1} my={1} alignItems="center">
           <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
-            <IconArrowDownRight width={20} color="#FA896B" />
+            <IconArrowUpRight width={20} color="green" />
           </Avatar>
           <Typography variant="subtitle2" fontWeight="600">
-            9%
+            0.8
           </Typography>
           <Typography variant="subtitle2" color="textSecondary">
             Ultima medicion
