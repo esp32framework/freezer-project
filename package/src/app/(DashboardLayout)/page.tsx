@@ -11,8 +11,18 @@ import PromedioTemperatura from '@/app/(DashboardLayout)/components/dashboard/Pr
 
 const Dashboard = () => {
   return (
-    <PageContainer title="Dashboard" description="this is Dashboard">
+    <PageContainer title="Proyecto Freezer" description="this is Dashboard">
       <Box>
+        <div className="flex"> 
+          <div >
+            <h1 className="text-3x2 font-bold">
+              Panel general        
+            </h1>
+            <p className="text-sm px-3 py-10">
+              esto es de prueba
+            </p>
+          </div>
+        </div>
         <Grid container spacing={3}>
           <Grid item xs={12} lg={8}>
             <SalesOverview />
