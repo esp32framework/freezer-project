@@ -7,7 +7,7 @@ import YearlyBreakup from '@/app/(DashboardLayout)/components/dashboard/YearlyBr
 import RecentTransactions from '@/app/(DashboardLayout)/components/dashboard/RecentTransactions';
 import ProductPerformance from '@/app/(DashboardLayout)/components/dashboard/ProductPerformance';
 import Blog from '@/app/(DashboardLayout)/components/dashboard/Blog';
-import MonthlyEarnings from '@/app/(DashboardLayout)/components/dashboard/MonthlyEarnings';
+import PromedioTemperatura from '@/app/(DashboardLayout)/components/dashboard/PromedioTemperatura';
 
 const Dashboard = () => {
   return (
@@ -23,19 +23,16 @@ const Dashboard = () => {
                 <YearlyBreakup />
               </Grid>
               <Grid item xs={12}>
-                <MonthlyEarnings />
+                <PromedioTemperatura />
               </Grid>
             </Grid>
-          </Grid>
-          <Grid item xs={12} lg={4}>
-            <RecentTransactions />
           </Grid>
           <Grid item xs={12} lg={8}>
             <ProductPerformance />
           </Grid>
-          <Grid item xs={12}>
+          {/* <Grid item xs={12}>
             <Blog />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Box>
     </PageContainer>

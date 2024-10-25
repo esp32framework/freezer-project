@@ -23,7 +23,7 @@ const SalesOverview = () => {
     // chart
     const optionscolumnchart: any = {
         chart: {
-            type: 'bar',
+            type: 'area',
             fontFamily: "'Plus Jakarta Sans', sans-serif;",
             foreColor: '#adb0bb',
             toolbar: {
@@ -32,66 +32,65 @@ const SalesOverview = () => {
             height: 370,
         },
         colors: [primary, secondary],
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                barHeight: '60%',
-                columnWidth: '42%',
-                borderRadius: [6],
-                borderRadiusApplication: 'end',
-                borderRadiusWhenStacked: 'all',
-            },
-        },
+        // plotOptions: {
+        //     bar: {
+        //         horizontal: false,
+        //         barHeight: '60%',
+        //         columnWidth: '42%',
+        //         borderRadius: [6],
+        //         borderRadiusApplication: 'end',
+        //         borderRadiusWhenStacked: 'all',
+        //     },
+        // },
 
-        stroke: {
-            show: true,
-            width: 5,
-            lineCap: "butt",
-            colors: ["transparent"],
-          },
-        dataLabels: {
-            enabled: false,
-        },
-        legend: {
-            show: false,
-        },
-        grid: {
-            borderColor: 'rgba(0,0,0,0.1)',
-            strokeDashArray: 3,
-            xaxis: {
-                lines: {
-                    show: false,
-                },
-            },
-        },
-        yaxis: {
-            tickAmount: 4,
-        },
+        // stroke: {
+        //     show: true,
+        //     width: 5,
+        //     lineCap: "butt",
+        //     colors: ["transparent"],
+        //   },
+        // dataLabels: {
+        //     enabled: false,
+        // },
+        // legend: {
+        //     show: false,
+        // },
+        // grid: {
+        //     borderColor: 'rgba(0,0,0,0.1)',
+        //     strokeDashArray: 3,
+        //     xaxis: {
+        //         lines: {
+        //             show: false,
+        //         },
+        //     },
+        // },
+        // yaxis: {
+        //     tickAmount: 4,
+        // },
         xaxis: {
             categories: ['16/08', '17/08', '18/08', '19/08', '20/08', '21/08', '22/08', '23/08'],
             axisBorder: {
                 show: false,
             },
         },
-        tooltip: {
-            theme: 'dark',
-            fillSeriesColor: false,
-        },
+        // tooltip: {
+        //     theme: 'dark',
+        //     fillSeriesColor: false,
+        // },
     };
-    const seriescolumnchart: any = [
+    const seriescolumnchart: any = [ // aca llamar al back para conseguir los datos
         {
-            name: 'Eanings this month',
-            data: [355, 390, 300, 350, 390, 180, 355, 390],
+            name: 'ESP 1',
+            data: [-0.7,0.1,0.0,-1.5,-2.3,0.4,0.5,0.6],
         },
         {
-            name: 'Expense this month',
-            data: [280, 250, 325, 215, 250, 310, 280, 250],
+            name: 'ESP 2',
+            data: [-0.2,0.4,0.4,-0.4,0.5,-0.3,2.5,1.6],
         },
     ];
 
     return (
-
-        <DashboardCard title="Sales Overview" action={
+        <DashboardCard title="Valores Generales" action={
             <Select
                 labelId="month-dd"
                 id="month-dd"
@@ -99,15 +98,15 @@ const SalesOverview = () => {
                 size="small"
                 onChange={handleChange}
             >
-                <MenuItem value={1}>March 2023</MenuItem>
-                <MenuItem value={2}>April 2023</MenuItem>
-                <MenuItem value={3}>May 2023</MenuItem>
+                <MenuItem value={1}>Temperatura</MenuItem>
+                <MenuItem value={2}>Humedad</MenuItem>
+                <MenuItem value={3}>Presion</MenuItem>
             </Select>
         }>
             <Chart
                 options={optionscolumnchart}
                 series={seriescolumnchart}
-                type="bar"
+                type="area"
                 height={370} width={"100%"}
             />
         </DashboardCard>
