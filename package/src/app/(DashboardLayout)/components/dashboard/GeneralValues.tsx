@@ -3,10 +3,17 @@ import { Select, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import dynamic from "next/dynamic";
+import { QueryResult, QueryResultRow } from '@vercel/postgres';
+
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const AMOUNT_OF_DAYS = 8;
 
-const GeneralValues = () => {
+// Define los tipos de los props que el componente espera recibir
+interface GeneralValuesProps {
+    lastValues: ApiResponse;
+}
+
+const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
     const [metric, setMetric] = React.useState(1); // 1: Temperatura, 2: Humedad, 3: Presión
 
     const handleDashboardChange = (event: any) => {
@@ -31,8 +38,7 @@ const GeneralValues = () => {
         },
         colors: [primary, secondary],
         xaxis: {
-
-            categories: ['16/08', '17/08', '18/08', '19/08', '20/08', '21/08', '22/08', '23/08'],
+            categories: lastValues.measurements.map((row) => row.time),
             axisBorder: {
                 show: false,
             },
@@ -41,16 +47,16 @@ const GeneralValues = () => {
 
     const data = {
         temperature: [
-            { name: 'ESP 1', data: [22.3, 23.1, 21.9, 20.8, 22.0, 23.5, 24.1, 22.9] },
-            { name: 'ESP 2', data: [21.8, 22.0, 22.5, 22.3, 23.0, 23.3, 22.8, 23.1] },
+            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.temperature) },
+            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.temperature) },
         ],
         humidity: [
-            { name: 'ESP 1', data: [65, 60, 62, 58, 64, 66, 63, 61] },
-            { name: 'ESP 2', data: [60, 63, 64, 62, 65, 67, 61, 64] },
+            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.humidity) },
+            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.humidity) },
         ],
         pressure: [
-            { name: 'ESP 1', data: [1012, 1013, 1011, 1010, 1012, 1014, 1015, 1013] },
-            { name: 'ESP 2', data: [1011, 1012, 1013, 1011, 1010, 1013, 1014, 1012] },
+            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.pressure) },
+            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.pressure) },
         ],
     };
     
@@ -59,7 +65,7 @@ const GeneralValues = () => {
         if (metric === 1) return data.temperature;
         if (metric === 2) return data.humidity;
         return data.pressure;
-    }, [data.humidity, data.pressure, data.temperature, metric]);
+    }, [metric]);
 
 
     return (
