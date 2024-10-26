@@ -82,7 +82,7 @@ const Dashboard = () => {
               </Grid>
             </Grid>
             <Grid item xs={12} lg={8}>
-              <DataTable />
+              <DataTable lastValues={data}/>
             </Grid>
             {/* <Grid item xs={12}>
               <Blog />

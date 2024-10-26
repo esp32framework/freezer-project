@@ -3,7 +3,6 @@ import { Select, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import dynamic from "next/dynamic";
-import { QueryResult, QueryResultRow } from '@vercel/postgres';
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const AMOUNT_OF_DAYS = 8;
