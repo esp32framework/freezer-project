@@ -5,7 +5,7 @@ import PageContainer from '@/app/(DashboardLayout)/components/container/PageCont
 import GeneralValues from '@/app/(DashboardLayout)/components/dashboard/GeneralValues';
 import YearlyBreakup from '@/app/(DashboardLayout)/components/dashboard/YearlyBreakup';
 import RecentTransactions from '@/app/(DashboardLayout)/components/dashboard/RecentTransactions';
-import ProductPerformance from '@/app/(DashboardLayout)/components/dashboard/ProductPerformance';
+import DataTable from '@/app/(DashboardLayout)/components/dashboard/DataTable';
 import Blog from '@/app/(DashboardLayout)/components/dashboard/Blog';
 import PromedioTemperatura from '@/app/(DashboardLayout)/components/dashboard/PromedioTemperatura';
 
@@ -38,7 +38,7 @@ const Dashboard = () => {
             </Grid>
           </Grid>
           <Grid item xs={12} lg={8}>
-            <ProductPerformance />
+            <DataTable />
           </Grid>
           {/* <Grid item xs={12}>
             <Blog />
