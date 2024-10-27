@@ -37,7 +37,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
         },
         colors: [primary, secondary],
         xaxis: {
-            categories: lastValues.measurements.map((row) => row.time),
+            categories: lastValues.measurements.map((row) => row.time.getHours() + ':' + row.time.getMinutes()),
             axisBorder: {
                 show: false,
             },

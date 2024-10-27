@@ -42,7 +42,7 @@ function fetchData(): Promise<ApiResponse> {
           pressure: parseFloat(row.pressure),       // Convierte a número
           espid: parseInt(row.espid),               // Convierte a número entero
         }));
-
+        
         // Resuelve la promesa con el ApiResponse
         resolve({ measurements });
       })
@@ -54,6 +54,7 @@ const Dashboard = () => {
 
   return fetchData().then(data => {
     console.log("Esta es la data data: ", data.measurements);
+    data.measurements.toReversed();
     return (
       <PageContainer title="Proyecto Freezer" description="this is Dashboard">
         <Box>
@@ -95,9 +96,6 @@ const Dashboard = () => {
   .catch(error => {
     console.error('Error:', error); // Imprime el error en caso de fallo
   });
-
-
-  
 }
 
 export default Dashboard;
