@@ -62,7 +62,7 @@ const Dashboard = () => {
               <h1 className="text-3x2 font-bold">
                 Panel general        
               </h1>
-              <p className="text-sm px-3 py-10">
+              <p className="text-sm px-3 py-10 font-bold">
                 esto es de prueba
               </p>
             </div>
@@ -77,7 +77,7 @@ const Dashboard = () => {
                   <YearlyBreakup />
                 </Grid>
                 <Grid item xs={12}>
-                  <PromedioTemperatura />
+                  <PromedioTemperatura lastValues={data}/>
                 </Grid>
               </Grid>
             </Grid>

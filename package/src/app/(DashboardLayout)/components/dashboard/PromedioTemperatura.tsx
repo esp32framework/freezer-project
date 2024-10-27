@@ -6,13 +6,26 @@ import { Stack, Typography, Avatar, Fab } from '@mui/material';
 import { IconArrowDownRight, IconArrowUpRight ,IconTemperatureCelsius } from '@tabler/icons-react';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 
-const PromedioTemperatura = () => {
+interface GeneralValuesProps {
+  lastValues: ApiResponse;
+}
+
+const PromedioTemperatura: React.FC<GeneralValuesProps> = ({lastValues}) => {
   // chart color
   const theme = useTheme();
   const secondary = theme.palette.secondary.main;
   const secondarylight = '#f5fcff';
   const errorlight = '#fdede8';
 
+  const temp = lastValues.measurements.map((row) => row.temperature);
+  const promedio = temp.reduce((a, b) => a + b, 0) / temp.length;
+  const variacion: number = parseFloat((temp[temp.length - 1] - temp[temp.length - 2]).toFixed(2));
+  let icon;
+  if (variacion < 0) {
+    icon = <IconArrowDownRight width={20} color="red" />;
+  } else {
+    icon = <IconArrowUpRight width={20} color="green" />;
+  }
   // chart
   const optionscolumnchart: any = {
     chart: {
@@ -48,7 +61,7 @@ const PromedioTemperatura = () => {
     {
       name: '',
       color: secondary,
-      data: [0.3, 0.2, 0.15, -0.05, 0.3],
+      data: temp,
     },
   ];
 
@@ -66,17 +79,17 @@ const PromedioTemperatura = () => {
     >
       <>
         <Typography variant="h3" fontWeight="700" mt="-20px">
-          0.2
+          {promedio}
         </Typography>
         <Stack direction="row" spacing={1} my={1} alignItems="center">
           <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
-            <IconArrowUpRight width={20} color="green" />
+            {icon}
           </Avatar>
           <Typography variant="subtitle2" fontWeight="600">
-            0.8
+            {variacion}°C
           </Typography>
           <Typography variant="subtitle2" color="textSecondary">
-            Ultima medicion
+            Ultima medicion 
           </Typography>
         </Stack>
       </>
