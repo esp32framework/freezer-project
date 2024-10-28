@@ -37,25 +37,50 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
         },
         colors: [primary, secondary],
         xaxis: {
-            categories: lastValues.measurements.map((row) => row.time),
+            categories: lastValues.measurements.map((row) => row.time.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,}).replace(',', '-')),
             axisBorder: {
                 show: false,
             },
         },
     };
 
+    console.log("Normal: ", lastValues.measurements);
+    console.log("Reverse: ", lastValues.measurements.reverse());
+
     const data = {
         temperature: [
-            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.temperature) },
-            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.temperature) },
+            { name: 'ESP 1', data: lastValues.measurements
+                .filter((row) => row.espid === 1)
+                
+                .map((row) => row.temperature) },
+            { name: 'ESP 2', data: lastValues.measurements
+                .filter((row) => row.espid === 2)
+                .map((row) => row.temperature) },
+            { name: 'ESP 3', data: lastValues.measurements
+                .filter((row) => row.espid === 3)
+                .map((row) => row.temperature) },
         ],
         humidity: [
-            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.humidity) },
-            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.humidity) },
+            { name: 'ESP 1', data: lastValues.measurements
+                .filter((row) => row.espid === 1)
+                .map((row) => row.humidity) },
+            { name: 'ESP 2', data: lastValues.measurements
+                .filter((row) => row.espid === 2)
+                .map((row) => row.humidity) },
+            { name: 'ESP 3', data: lastValues.measurements
+                .filter((row) => row.espid === 3)
+                .map((row) => row.humidity) },
         ],
         pressure: [
-            { name: 'ESP 1', data: lastValues.measurements.map((row) => row.pressure) },
-            { name: 'ESP 2', data: lastValues.measurements.map((row) => row.pressure) },
+            { name: 'ESP 1', data: lastValues.measurements
+                .filter((row) => row.espid === 1)
+                .map((row) => row.pressure) },
+            { name: 'ESP 2', data: lastValues.measurements
+                .filter((row) => row.espid === 2)
+                .map((row) => row.pressure) },
+            { name: 'ESP 3', data: lastValues.measurements
+                .filter((row) => row.espid === 3)
+                .map((row) => row.pressure) },
         ],
     };
     

@@ -5,7 +5,7 @@ import PageContainer from '@/app/(DashboardLayout)/components/container/PageCont
 import GeneralValues from '@/app/(DashboardLayout)/components/dashboard/GeneralValues';
 import YearlyBreakup from '@/app/(DashboardLayout)/components/dashboard/YearlyBreakup';
 import DataTable from '@/app/(DashboardLayout)/components/dashboard/DataTable';
-import PromedioTemperatura from '@/app/(DashboardLayout)/components/dashboard/PromedioTemperatura';
+import AvgTemperature from '@/app/(DashboardLayout)/components/dashboard/AvgTemperature';
 
 
 // function fetchData(): Promise<ApiResponse> {
@@ -77,7 +77,7 @@ const Dashboard = () => {
                   <YearlyBreakup />
                 </Grid>
                 <Grid item xs={12}>
-                  <PromedioTemperatura />
+                  <AvgTemperature lastValues={data}/>
                 </Grid>
               </Grid>
             </Grid>

@@ -6,7 +6,11 @@ import { Stack, Typography, Avatar, Fab } from '@mui/material';
 import { IconArrowDownRight, IconArrowUpRight ,IconTemperatureCelsius } from '@tabler/icons-react';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 
-const PromedioTemperatura = () => {
+interface AvgTemperatureProps {
+  lastValues: ApiResponse;
+}
+
+const AvgTemperature : React.FC<AvgTemperatureProps> = ({ lastValues }) => {
   // chart color
   const theme = useTheme();
   const secondary = theme.palette.secondary.main;
@@ -44,11 +48,14 @@ const PromedioTemperatura = () => {
       theme: theme.palette.mode === 'dark' ? 'dark' : 'light',
     },
   };
+
+  const temperature = lastValues.measurements.map((row) => row.temperature);
+  const average = (arr: any) => arr.reduce( ( p: number, c: number ) => p + c, 0 ) / arr.length;
   const seriescolumnchart: any = [
     {
       name: '',
       color: secondary,
-      data: [0.3, 0.2, 0.15, -0.05, 0.3],
+      data: temperature,
     },
   ];
 
@@ -66,14 +73,18 @@ const PromedioTemperatura = () => {
     >
       <>
         <Typography variant="h3" fontWeight="700" mt="-20px">
-          0.2
+          {average(temperature)}
         </Typography>
         <Stack direction="row" spacing={1} my={1} alignItems="center">
           <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
-            <IconArrowUpRight width={20} color="green" />
+          {temperature[temperature.length - 2] < temperature[temperature.length - 1] ? (
+                <IconArrowUpRight width={20} color="green" />
+            ) : (
+                <IconArrowDownRight width={20} color="red" />
+            )}
           </Avatar>
           <Typography variant="subtitle2" fontWeight="600">
-            0.8
+            {temperature[temperature.length - 1]}
           </Typography>
           <Typography variant="subtitle2" color="textSecondary">
             Ultima medicion
@@ -84,4 +95,4 @@ const PromedioTemperatura = () => {
   );
 };
 
-export default PromedioTemperatura;
+export default AvgTemperature;

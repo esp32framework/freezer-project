@@ -27,6 +27,11 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
                         <TableRow sx={{ borderBottom: "5px solid", borderColor: "divider" }}>
                             <TableCell sx={{ textAlign: "center" }}>
                                 <Typography variant="subtitle2" fontWeight={600}>
+                                    ESP-ID
+                                </Typography>
+                            </TableCell>
+                            <TableCell sx={{ textAlign: "center" }}>
+                                <Typography variant="subtitle2" fontWeight={600}>
                                     Time
                                 </Typography>
                             </TableCell>
@@ -50,6 +55,16 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
                     <TableBody>
                         {lastValues.measurements.map((measurement) => (
                             <TableRow key={measurement.time.getUTCDate()} sx={{ borderBottom: "2px solid", borderColor: "divider" }}>
+                                <TableCell sx={{ textAlign: "center" }}>
+                                    <Typography
+                                        sx={{
+                                            fontSize: "15px",
+                                            fontWeight: "500",
+                                        }}
+                                    >
+                                        {measurement.espid}
+                                    </Typography>
+                                </TableCell>
                                 <TableCell sx={{ textAlign: "center" }}>
                                     <Typography
                                         sx={{
