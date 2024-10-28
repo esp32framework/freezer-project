@@ -17,6 +17,15 @@ const AvgTemperature : React.FC<AvgTemperatureProps> = ({ lastValues }) => {
   const secondarylight = '#f5fcff';
   const errorlight = '#fdede8';
 
+  const temp = lastValues.measurements.map((row) => row.temperature);
+  const promedio = temp.reduce((a, b) => a + b, 0) / temp.length;
+  const variacion: number = parseFloat((temp[temp.length - 1] - temp[temp.length - 2]).toFixed(2));
+  let icon;
+  if (variacion < 0) {
+    icon = <IconArrowDownRight width={20} color="red" />;
+  } else {
+    icon = <IconArrowUpRight width={20} color="green" />;
+  }
   // chart
   const optionscolumnchart: any = {
     chart: {
@@ -73,21 +82,17 @@ const AvgTemperature : React.FC<AvgTemperatureProps> = ({ lastValues }) => {
     >
       <>
         <Typography variant="h3" fontWeight="700" mt="-20px">
-          {average(temperature)}
+          {promedio}
         </Typography>
         <Stack direction="row" spacing={1} my={1} alignItems="center">
           <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
-          {temperature[temperature.length - 2] < temperature[temperature.length - 1] ? (
-                <IconArrowUpRight width={20} color="green" />
-            ) : (
-                <IconArrowDownRight width={20} color="red" />
-            )}
+            {icon}
           </Avatar>
           <Typography variant="subtitle2" fontWeight="600">
-            {temperature[temperature.length - 1]}
+            {variacion}°C
           </Typography>
           <Typography variant="subtitle2" color="textSecondary">
-            Ultima medicion
+            Ultima medicion 
           </Typography>
         </Stack>
       </>
