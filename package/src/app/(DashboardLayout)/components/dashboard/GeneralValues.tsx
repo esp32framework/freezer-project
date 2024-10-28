@@ -24,6 +24,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
 
+
     // chart
     const optionscolumnchart: any = {
         chart: {
@@ -37,21 +38,20 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
         },
         colors: [primary, secondary],
         xaxis: {
-            categories: lastValues.measurements.map((row) => row.time.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,}).replace(',', '-')),
+            categories: lastValues.measurements
+                        .filter((row) => row.espid == 1)
+                        .map((row) => row.time.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,}).replace(',', '-'))
+                        .reverse(),
             axisBorder: {
                 show: false,
             },
         },
     };
 
-    console.log("Normal: ", lastValues.measurements);
-    console.log("Reverse: ", lastValues.measurements.reverse());
-
     const data = {
         temperature: [
             { name: 'ESP 1', data: lastValues.measurements
                 .filter((row) => row.espid === 1)
-                
                 .map((row) => row.temperature) },
             { name: 'ESP 2', data: lastValues.measurements
                 .filter((row) => row.espid === 2)
