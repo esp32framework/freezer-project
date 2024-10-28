@@ -41,7 +41,6 @@ const Dashboard = () => {
   return fetchData()
     .then((data) => {
       console.log("Esta es la data data: ", data.measurements);
-      data.measurements.toReversed();
       return (
         <PageContainer title="Proyecto Freezer" description="this is Dashboard">
           <Box>
