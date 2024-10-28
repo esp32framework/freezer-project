@@ -17,12 +17,12 @@ const Menuitems = [
   //   subheader: "Home",
   // },
 
-  // {
-  //   id: uniqueId(),
-  //   title: "Dashboard",
-  //   icon: IconLayoutDashboard,
-  //   href: "/",
-  // },
+  {
+    id: uniqueId(),
+    title: "Dashboard",
+    icon: IconLayoutDashboard,
+    href: "/",
+  },
   {
     navlabel: true,
     subheader: "Utilities",
