@@ -5,9 +5,13 @@ import PageContainer from "@/app/(DashboardLayout)/components/container/PageCont
 import GeneralValues from "@/app/(DashboardLayout)/components/dashboard/GeneralValues";
 import AvgTemperature from "@/app/(DashboardLayout)/components/dashboard/AvgMeasurements";
 
+export const dynamic = 'force-dynamic'
+
+const INTERVAL_SECONDS = 60;
+
 async function fetchData(): Promise<ApiResponse> {
   try {
-    const response = await fetch("/api/test"); // TODO: CHANGE API ENDPOINT
+    const response = await fetch("/api/test", { cache: 'no-store' }); 
     if (!response.ok) throw new Error("Error fetching data");
     const data = await response.json();
 
@@ -34,6 +38,7 @@ const Dashboard = () => {
       try {
         console.log("Haciendo el fetch");
         const newData = await fetchData();
+        console.log("data: ", newData);
         setData(newData);
       } catch (error) {
         console.error("Error actualizando los datos:", error);
@@ -43,7 +48,7 @@ const Dashboard = () => {
     updateData();
 
     // Interval of 1 minute
-    const intervalId = setInterval(updateData, 60000);
+    const intervalId = setInterval(updateData, INTERVAL_SECONDS * 1000);
 
     // Clean interval
     return () => clearInterval(intervalId);
