@@ -24,8 +24,8 @@ const getMeasurementInfo = (measurements: number[]): [number, number, JSX.Elemen
     measurements.reduce((a, b) => a + b, 0) / measurements.length;
   const variation: number = parseFloat(
     (
-      measurements[measurements.length - 1] -
-      measurements[measurements.length - 2]
+      measurements[0] -
+      measurements[1]
     ).toFixed(2)
   );
   let icon;
@@ -47,6 +47,8 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
 
   let espValues = lastValues.measurements.filter((row) => row.espid.toString()  === espid);
 
+  console.log("Data for esp ", espid, " is: ", espValues);
+
   let [tempAvg, tempVariation, tempIcon] = getMeasurementInfo(
     espValues.map((row) => row.temperature)
   );
@@ -56,38 +58,6 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
   let [humidityAvg, humidityVariation, humiditIcon] = getMeasurementInfo(
     espValues.map((row) => row.humidity)
   );
-
-  // chart
-  const optionscolumnchart: any = {
-    chart: {
-      type: "area",
-      fontFamily: "'Plus Jakarta Sans', sans-serif;",
-      foreColor: "#adb0bb",
-      toolbar: {
-        show: false,
-      },
-      height: 60,
-      sparkline: {
-        enabled: true,
-      },
-      group: "sparklines",
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    fill: {
-      colors: [secondarylight],
-      type: "solid",
-      opacity: 0.05,
-    },
-    markers: {
-      size: 0,
-    },
-    tooltip: {
-      theme: theme.palette.mode === "dark" ? "dark" : "light",
-    },
-  };
 
   const title = "Promedios ESP-" + espid;
 
@@ -146,14 +116,14 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
             </Fab>
           </Stack>
           <Typography variant={SUBTITLE_VARIANT} fontWeight="700" mt="-20px">
-            {pressAvg.toFixed(2)}
+            {pressAvg.toFixed(2)} hPa
           </Typography>
           <Stack direction="row" spacing={1} my={1} alignItems="center">
             <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
               {pressIcon}
             </Avatar>
             <Typography variant="subtitle2" fontWeight="600">
-              {pressVariation.toFixed(2)}
+              {pressVariation.toFixed(2)} hPa
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
               Respecto a ultima medicion
@@ -177,14 +147,14 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
             </Fab>
           </Stack>
           <Typography variant={SUBTITLE_VARIANT} fontWeight="700" mt="-20px">
-            {humidityAvg.toFixed(2)}
+            {humidityAvg.toFixed(2)} %
           </Typography>
           <Stack direction="row" spacing={1} my={1} alignItems="center">
             <Avatar sx={{ bgcolor: errorlight, width: 27, height: 27 }}>
               {humiditIcon}
             </Avatar>
             <Typography variant="subtitle2" fontWeight="600">
-              {humidityVariation.toFixed(2)}°C
+              {humidityVariation.toFixed(2)} %
             </Typography>
             <Typography variant="subtitle2" color="textSecondary">
               Respecto a ultima medicion
