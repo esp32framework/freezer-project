@@ -7,7 +7,7 @@ import AvgTemperature from "@/app/(DashboardLayout)/components/dashboard/AvgMeas
 
 export const dynamic = 'force-dynamic'
 
-const INTERVAL_SECONDS = 60 * 5;
+const INTERVAL_SECONDS = 60;
 
 async function fetchData(): Promise<ApiResponse> {
   try {

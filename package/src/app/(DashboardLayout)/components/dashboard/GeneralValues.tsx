@@ -89,7 +89,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
         if (metric === 1) return data.temperature;
         if (metric === 2) return data.humidity;
         return data.pressure;
-    }, [metric]);
+    }, [metric, lastValues]);
 
 
     return (
