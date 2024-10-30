@@ -7,6 +7,8 @@ import {
   IconMoodHappy,
   IconTypography,
   IconUserPlus,
+  IconTable,
+  IconTableFilled,
 } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
@@ -14,25 +16,24 @@ import { uniqueId } from "lodash";
 const Menuitems = [
   {
     navlabel: true,
-    subheader: "Home",
+    subheader: "Menu Principal",
   },
-
   {
     id: uniqueId(),
     title: "Dashboard",
     icon: IconLayoutDashboard,
     href: "/",
   },
-  // {
-  //   navlabel: true,
-  //   subheader: "Auth",
-  // },
-  // {
-  //   id: uniqueId(),
-  //   title: "Login",
-  //   icon: IconLogin,
-  //   href: "/authentication/login",
-  // },
+  {
+    navlabel: true,
+    subheader: "Datos",
+  },
+  {
+    id: uniqueId(),
+    title: "Tablas",
+    icon: IconTable,
+    href: "/tables",
+  },
   // {
   //   id: uniqueId(),
   //   title: "Register",
