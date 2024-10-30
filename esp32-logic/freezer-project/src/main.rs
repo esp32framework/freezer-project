@@ -1,8 +1,8 @@
 use esp32framework::{ble::{utils::{ble_standard_uuids::StandarServiceId, Characteristic, Service}, BleId, BleServer}, wifi::{http::{Http, HttpClient}, WifiDriver}, Microcontroller};
 
 const ADVERTISING_NAME: &str = "Server";
-const SSID: &str = "WIFI_SSID";
-const PASSWORD: &str = "WIFI_PASS";
+const SSID: &str = "Iphone 8 Diego New";
+const PASSWORD: &str = "diegocivini";
 const URI: &str = "https://freezer-project.vercel.app/api/esp-data";
 
 // CHARACTERISTIC IDs //
@@ -104,7 +104,7 @@ fn gather_data(server: &BleServer, characteristics: &Vec<Characteristic>, servic
 
 /// Sends the collected data of the devices to the web application
 /// so they can be shown to the users
-fn send_data(client: &mut HttpClient, data: Vec<Vec<u8>>) {    
+fn send_data(client: &mut HttpClient, data: &Vec<Vec<u8>>) {    
     // Send data of ESP-1
     let esp_1_url_params = format!("{}?id={1}&temp={}&hum={}&press={}", URI, data[0][0], data[1][0], data[2][0]);
 
@@ -128,11 +128,20 @@ fn main() {
     
     server.start().unwrap();
     
+    let mut counter = 0; 
     loop {
         micro.wait_for_updates(Some(5000));
 
         let data = gather_data(&server, &characteristics, &service_id);
+        if counter < 5 {
+            send_data(&mut client, &data);
+        }
 
-        send_data(&mut client, data);
+
+        println!("[ESP_1] Temperature: {:?}   Humidity: {:?}   Pressure: {:?}", data[0], data[1], data[2]);
+        println!("[ESP_2] Temperature: {:?}   Humidity: {:?}   Pressure: {:?}", data[3], data[4], data[5]);
+        println!("[ESP_3] Temperature: {:?}   Humidity: {:?}   Pressure: {:?}", data[6], data[7], data[8]);
+        println!("");
+        counter += 1;
     }
 }
