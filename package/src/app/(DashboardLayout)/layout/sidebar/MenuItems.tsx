@@ -12,38 +12,16 @@ import {
 import { uniqueId } from "lodash";
 
 const Menuitems = [
-  // {
-  //   navlabel: true,
-  //   subheader: "Home",
-  // },
+  {
+    navlabel: true,
+    subheader: "Home",
+  },
 
   {
     id: uniqueId(),
     title: "Dashboard",
     icon: IconLayoutDashboard,
     href: "/",
-  },
-  {
-    navlabel: true,
-    subheader: "Utilities",
-  },
-  {
-    id: uniqueId(),
-    title: "ESP 1",
-    icon: IconCpu,
-    href: "/utilities/typography", // Si esto va a ser una pagina aparte, aca va la direccion
-  },
-  {
-    id: uniqueId(),
-    title: "ESP 2",
-    icon: IconCpu,
-    href: "/utilities/shadow",
-  },
-  {
-    id: uniqueId(),
-    title: "ESP 3",
-    icon: IconCpu,
-    href: "/utilities/shadow",
   },
   // {
   //   navlabel: true,
