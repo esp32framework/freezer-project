@@ -7,16 +7,17 @@ import {
   IconMoodHappy,
   IconTypography,
   IconUserPlus,
+  IconTable,
+  IconTableFilled,
 } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
 
 const Menuitems = [
-  // {
-  //   navlabel: true,
-  //   subheader: "Home",
-  // },
-
+  {
+    navlabel: true,
+    subheader: "Menu Principal",
+  },
   {
     id: uniqueId(),
     title: "Dashboard",
@@ -25,36 +26,14 @@ const Menuitems = [
   },
   {
     navlabel: true,
-    subheader: "Utilities",
+    subheader: "Datos",
   },
   {
     id: uniqueId(),
-    title: "ESP 1",
-    icon: IconCpu,
-    href: "/utilities/typography", // Si esto va a ser una pagina aparte, aca va la direccion
+    title: "Tablas",
+    icon: IconTable,
+    href: "/tables",
   },
-  {
-    id: uniqueId(),
-    title: "ESP 2",
-    icon: IconCpu,
-    href: "/utilities/shadow",
-  },
-  {
-    id: uniqueId(),
-    title: "ESP 3",
-    icon: IconCpu,
-    href: "/utilities/shadow",
-  },
-  // {
-  //   navlabel: true,
-  //   subheader: "Auth",
-  // },
-  // {
-  //   id: uniqueId(),
-  //   title: "Login",
-  //   icon: IconLogin,
-  //   href: "/authentication/login",
-  // },
   // {
   //   id: uniqueId(),
   //   title: "Register",

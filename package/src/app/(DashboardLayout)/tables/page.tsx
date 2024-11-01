@@ -4,6 +4,7 @@ import { Grid, Box, Typography, Select, MenuItem } from "@mui/material";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
 import GeneralValues from "@/app/(DashboardLayout)/components/dashboard/GeneralValues";
 import AvgTemperature from "@/app/(DashboardLayout)/components/dashboard/AvgMeasurements";
+import DataTable from "../components/dashboard/DataTable";
 
 export const dynamic = "force-dynamic";
 
@@ -19,13 +20,15 @@ async function fetchData(): Promise<ApiResponse> {
     if (!response.ok) throw new Error("Error fetching data");
     const data = await response.json();
 
-    const measurements: Measurement[] = data.measurements.rows.map((row: any) => ({
-      time: new Date(row.time),
-      temperature: parseFloat(row.temperature),
-      humidity: parseFloat(row.humidity),
-      pressure: parseFloat(row.pressure),
-      espid: parseInt(row.espid),
-    }));
+    const measurements: Measurement[] = data.measurements.rows.map(
+      (row: any) => ({
+        time: new Date(row.time),
+        temperature: parseFloat(row.temperature),
+        humidity: parseFloat(row.humidity),
+        pressure: parseFloat(row.pressure),
+        espid: parseInt(row.espid),
+      })
+    );
 
     return { measurements };
   } catch (error) {
@@ -34,7 +37,7 @@ async function fetchData(): Promise<ApiResponse> {
   }
 }
 
-const Dashboard = () => {
+const Table = () => {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [selectedInterval, setSelectedInterval] = useState(3); // Valor inicial: 5 minutos
 
@@ -53,14 +56,17 @@ const Dashboard = () => {
     updateData();
 
     // Configura el intervalo según la selección
-    const intervalId = setInterval(updateData, INTERVAL_OPTIONS[selectedInterval as keyof typeof INTERVAL_OPTIONS] * 1000);
+    const intervalId = setInterval(
+      updateData,
+      INTERVAL_OPTIONS[selectedInterval as keyof typeof INTERVAL_OPTIONS] * 1000
+    );
 
     // Limpia el intervalo al desmontar o al cambiar el intervalo
     return () => clearInterval(intervalId);
   }, [selectedInterval]);
 
   return (
-    <PageContainer title="Proyecto Freezer" description="this is Dashboard">
+    <PageContainer title="Proyecto Freezer" description="Datos">
       <Box>
         <Box
           sx={{
@@ -72,7 +78,7 @@ const Dashboard = () => {
             borderRadius: 1,
           }}
         >
-          <Typography variant="h1">Panel General</Typography>
+          <Typography variant="h1">Tabla de Datos</Typography>
           <Select
             labelId="month-dd"
             id="month-dd"
@@ -87,16 +93,7 @@ const Dashboard = () => {
         </Box>
         <Grid container spacing={3}>
           <Grid item xs={12} lg={12}>
-            {data && <GeneralValues lastValues={data} />}
-          </Grid>
-          <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="1" />}
-          </Grid>
-          <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="2" />}
-          </Grid>
-          <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="3" />}
+            {data && <DataTable lastValues={data} />}
           </Grid>
         </Grid>
       </Box>
@@ -104,4 +101,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Table;

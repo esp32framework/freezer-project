@@ -8,7 +8,6 @@ import {
   IconCloud,
   IconArrowsMinimize
 } from "@tabler/icons-react";
-// import { FaCompressArrowsAlt } from "react-icons/fa";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 
 interface AvgTemperatureProps {
