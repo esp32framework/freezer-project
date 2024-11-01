@@ -150,8 +150,9 @@
 
 
 mod client_server;
-use client_server::client::*;
+use client_server::*;
 
 fn main(){
-    client_main();
+    //client::client_main();
+    server::server_main();
 }

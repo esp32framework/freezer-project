@@ -6,18 +6,16 @@ use esp32framework::external_peripheral::*;
 use esp_idf_svc::hal::{i2c::{I2cConfig,I2cDriver},delay::{Delay, FreeRtos},prelude::Peripherals};
 
 // Oversampling mode
+// TODO, varias de estas variables estan al dope;
 static GLOBAL_OVERSAMPLING: Oversampling = Oversampling::Oversampling2X;
 pub static MEASUREMENT_DELAY_SECONDS: u64 = 1;
 pub static MEASUREMENT_DELAY_MILLIS: u32 = 0;
 pub static MEASUREMENT_DELAY: Duration = Duration::new(MEASUREMENT_DELAY_SECONDS, MEASUREMENT_DELAY_MILLIS);
 
 pub fn create_bme280 (micro: &mut Microcontroller,sda_num: u8, scl_num: u8) -> BME280<I2cDriver<'static>> {
-    let peripherals = Peripherals::take().unwrap();
-    
     // TODO: View errors
-    let used_peripherals1: Vec<Peripheral> = vec![Peripheral::Pin(sda_num),Peripheral::Pin(scl_num),Peripheral::I2C];
-    let mut used_peripherals: Vec<Peripheral> = vec![Peripheral::Pin(sda_num),Peripheral::Pin(scl_num),Peripheral::I2C];
-    micro.register_external_peripherals_use(used_peripherals1);
+    let used_peripherals: Vec<Peripheral> = vec![Peripheral::Pin(sda_num),Peripheral::Pin(scl_num),Peripheral::I2C];
+    let mut used_peripherals = micro.register_external_peripherals_use(used_peripherals);
     
     let sda_pin = used_peripherals.remove(0).into_any_io_pin().unwrap();
     let scl_pin = used_peripherals.remove(0).into_any_io_pin().unwrap();
@@ -33,13 +31,10 @@ pub fn create_bme280 (micro: &mut Microcontroller,sda_num: u8, scl_num: u8) -> B
 }
 
 fn create_bme280_config() -> Bme280_Config {
-    let bme_config = Bme280_Config::default();
-
-    bme_config.with_humidity_oversampling(GLOBAL_OVERSAMPLING);
-    bme_config.with_pressure_oversampling(GLOBAL_OVERSAMPLING);
-    bme_config.with_temperature_oversampling(GLOBAL_OVERSAMPLING);
-
-    bme_config
+    Bme280_Config::default()
+    .with_humidity_oversampling(GLOBAL_OVERSAMPLING)
+    .with_pressure_oversampling(GLOBAL_OVERSAMPLING)
+    .with_temperature_oversampling(GLOBAL_OVERSAMPLING)
 }
 
 

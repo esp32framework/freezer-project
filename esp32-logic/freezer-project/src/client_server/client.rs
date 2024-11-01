@@ -8,6 +8,10 @@ const SERVER_NAME: &str = "FreezzerServer";
 const SERVICE_ID:u16 = 0x1000;
 const ESP_ID: u16 = 1;
 
+const CHAR_HUMIDITY_ID :BleId = BleId::from_standard_characteristic(StandardCharacteristicId::Humidity);
+const CHAR_PRESSURE_ID :BleId = BleId::from_standard_characteristic(StandardCharacteristicId::Pressure);
+const CHAR_TEMPERATURE_ID :BleId = BleId::from_standard_characteristic(StandardCharacteristicId::Temperature);
+
 struct SensorsCharacteristics{
     humidity: RemoteCharacteristic,
     pressure: RemoteCharacteristic,
@@ -29,14 +33,11 @@ impl From<Vec<RemoteCharacteristic>> for SensorsCharacteristics{
         let mut humidity = None;
         
         for characteristic in value{
-            if BleId::from_standard_characteristic(StandardCharacteristicId::Humidity) == characteristic.id(){
-                humidity = Some(characteristic)
-            }
-            else if BleId::from_standard_characteristic(StandardCharacteristicId::Pressure) == characteristic.id(){
-                pressure = Some(characteristic)
-            }
-            else if BleId::from_standard_characteristic(StandardCharacteristicId::Temperature) == characteristic.id(){
-                temperature = Some(characteristic)
+            match characteristic.id(){
+                CHAR_HUMIDITY_ID => humidity = Some(characteristic),
+                CHAR_PRESSURE_ID => pressure = Some(characteristic),
+                CHAR_TEMPERATURE_ID => temperature = Some(characteristic),
+                _ => {}
             }
         }
 
