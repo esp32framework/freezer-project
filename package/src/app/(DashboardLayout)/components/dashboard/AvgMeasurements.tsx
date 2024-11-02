@@ -6,7 +6,8 @@ import {
   IconArrowUpRight,
   IconTemperature,
   IconCloud,
-  IconArrowsMinimize
+  IconArrowsMinimize,
+  IconArrowRight
 } from "@tabler/icons-react";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 
@@ -30,8 +31,10 @@ const getMeasurementInfo = (measurements: number[]): [number, number, JSX.Elemen
   let icon;
   if (variation < 0) {
     icon = <IconArrowDownRight width={20} color="red" />;
-  } else {
+  } if (variation > 0) {
     icon = <IconArrowUpRight width={20} color="green" />;
+  } else {
+    icon = <IconArrowRight width={20} color="grey" />;
   }
 
   return [avg, variation, icon];
@@ -40,8 +43,6 @@ const getMeasurementInfo = (measurements: number[]): [number, number, JSX.Elemen
 const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) => {
   // chart color
   const theme = useTheme();
-  const secondary = theme.palette.secondary.main;
-  const secondarylight = "#f5fcff";
   const errorlight = "#fdede8";
 
   let espValues = lastValues.measurements.filter((row) => row.espid.toString()  === espid);

@@ -2,9 +2,8 @@
 import { useState, useEffect } from "react";
 import { Grid, Box, Typography, Select, MenuItem } from "@mui/material";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
-import GeneralValues from "@/app/(DashboardLayout)/components/dashboard/GeneralValues";
-import AvgTemperature from "@/app/(DashboardLayout)/components/dashboard/AvgMeasurements";
 import DataTable from "../components/dashboard/DataTable";
+import CustomModal from "../components/dashboard/DropDownFilters";
 
 export const dynamic = "force-dynamic";
 
