@@ -15,7 +15,7 @@ const INTERVAL_OPTIONS = {
 
 async function fetchData(): Promise<ApiResponse> {
   try {
-    const response = await fetch("/api/test", { cache: "no-store" });
+    const response = await fetch("/api/esp-data/get", { cache: "no-store" });
     if (!response.ok) throw new Error("Error fetching data");
     const data = await response.json();
 
@@ -90,13 +90,13 @@ const Dashboard = () => {
             {data && <GeneralValues lastValues={data} />}
           </Grid>
           <Grid item xs={4}>
+            {data && <AvgTemperature lastValues={data} espid="0" />}
+          </Grid>
+          <Grid item xs={4}>
             {data && <AvgTemperature lastValues={data} espid="1" />}
           </Grid>
           <Grid item xs={4}>
             {data && <AvgTemperature lastValues={data} espid="2" />}
-          </Grid>
-          <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="3" />}
           </Grid>
         </Grid>
       </Box>
