@@ -1,13 +1,14 @@
 mod setup_bme280;
+use std::{cell::RefCell, rc::Rc};
+
 use bme280::Measurements;
 use esp32framework::{
     ble::{
         utils::{ble_standard_uuids::StandardCharacteristicId, RemoteCharacteristic},
         BleClient, BleId,
-    },
-    Microcontroller,
+    }, gpio::digital::{DigitalOut, InterruptType}, timer_driver::TimerDriver, Microcontroller
 };
-use esp_idf_svc::hal::delay::Delay;
+use esp_idf_svc::hal::{delay::Delay, gpio::Level};
 use setup_bme280::*;
 
 const SERVER_NAME: &str = "FreezzerServer";
@@ -82,20 +83,54 @@ fn get_server_characteristic(client: &mut BleClient) -> SensorsCharacteristics {
     SensorsCharacteristics::from(client.get_all_characteristics(&service_id).unwrap())
 }
 
+fn handle_door(opened: Level, led: &mut DigitalOut, alarm: &Rc<RefCell<DigitalOut>>, timer_driver: &mut TimerDriver){
+    match opened {
+        Level::Low => timer_driver.enable().unwrap(),
+        Level::High => {
+            timer_driver.disable().unwrap();
+            alarm.borrow_mut().set_low().unwrap();
+        },
+    }
+    led.toggle().unwrap();
+}
+
+fn set_alarm(micro: &mut Microcontroller<'static>){
+    let mut door = micro.set_pin_as_digital_in(9).unwrap();
+    let mut led = micro.set_pin_as_digital_out(3).unwrap();
+    let mut timer_driver = micro.get_timer_driver().unwrap();
+
+    let sharable_alarm = Rc::new(RefCell::from(micro.set_pin_as_digital_out(7).unwrap()));
+    let sharable_alarm_ref = sharable_alarm.clone();
+    led.set_high().unwrap();
+    door.set_debounce(1_000_000);
+
+
+    timer_driver.interrupt_after(10 * 1_000_000, move || {
+        println!("WIUWIUWIU");
+        sharable_alarm.borrow_mut().set_high().unwrap();
+    });
+    // door._trigger_on_interrupt(user_callback, callback, interrupt_type) //TODO sacar de pub 
+    door.trigger_on_interrupt(move |level|{
+        handle_door(level, &mut led, &sharable_alarm_ref, &mut timer_driver);
+    }, InterruptType::AnyEdgeNextEdgeIsNeg).unwrap();
+}
+
 fn main() {
     let mut micro = Microcontroller::take();
-
+    set_alarm(&mut micro);
+    
     let mut client = initialize_ble_client(&mut micro);
     let mut characteristics = get_server_characteristic(&mut client);
-
+    
     let mut sensor = create_bme280(&mut micro, 11, 10);
     let mut delay = Delay::new(MEASUREMENT_DELAY.as_millis() as u32);
+
     loop {
+        micro.wait_for_updates(Some(3000));
         let data = sensor.measure(&mut delay).unwrap();
         println!("Temperature: {}°C", data.temperature);
         println!("Pressure: {}hPa", data.pressure);
         println!("Humidity: {}%", data.humidity);
         characteristics.write(data);
-        micro.wait_for_updates(Some(3000));
     }
 }
