@@ -33,7 +33,7 @@ embassy = ["esp-idf-svc/embassy-sync", "esp-idf-svc/critical-section", "esp-idf-
 [dependencies]
 log = { version = "0.4", default-features = false }
 esp-idf-svc = { version = "0.49.1", default-features = false }
-esp32framework = {git = "https://github.com/esp32framework/esp32framework", branch = "debounce_any_edge"}
+esp32framework = {git = "https://github.com/esp32framework/esp32framework"}
 bme280 = "0.5.1"
 
 [build-dependencies]

@@ -4,7 +4,7 @@ use esp32framework::{
         BleId, BleServer,
     },
     wifi::{
-        http::{Http, HttpsClient},
+        http::{Http, HttpHeader, HttpHeaderType, HttpsClient},
         WifiDriver,
     },
     Microcontroller,
@@ -67,11 +67,15 @@ impl ClientData {
 
     fn send(&self, https_client: &mut HttpsClient) {
         let send_data = format!(
-            "{}?id={}&hum={}&press={}&temp={}",
-            URI, self.id, self.humidity, self.pressure, self.temperature
+            "{{\"id\":{}, \"hum\":{}, \"press\":{}, \"temp\":{}}}",
+            self.id, self.humidity, self.pressure, self.temperature
+        );
+        let content_type_header = HttpHeader::new(
+            HttpHeaderType::ContentType,
+            String::from("application/json"),
         );
         self.print();
-        https_client.get(&send_data, vec![]).unwrap();
+        https_client.post(URI, vec![content_type_header], Some(send_data)).unwrap();
         https_client.wait_for_response(&mut []).unwrap();
     }
 }
@@ -141,7 +145,6 @@ fn send_all_data(https_client: &mut HttpsClient, data: Vec<ClientData>) {
 pub fn main() {
     let mut micro = Microcontroller::take();
     let mut server = initialize_ble_server(&mut micro);
-    // TODO: WifiDriver variable is not being used. If wifi connection is failing check if this is the reason.
     let (_wifi, mut https_client) = initialize_wifi_connection(&mut micro);
 
     server.start().unwrap();
