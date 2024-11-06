@@ -13,7 +13,8 @@ use esp32framework::{
 const ADVERTISING_NAME: &str = "FreezzerServer";
 const SSID: &str = "WIFI_SSID";
 const PASSWORD: &str = "WIFI_PASS";
-const URI: &str = "https://freezer-project.vercel.app/api/esp-data/post";
+const MEASUREMENT_URI: &str = "https://freezer-project.vercel.app/api/esp-data/post";
+const ALERT_URI: &str = "https://freezer-project.vercel.app/api/door/post";
 
 const SERVICE_ID: u16 = 0x1000;
 const AMOUNT_OF_CLIENTS: u16 = 3;
@@ -25,12 +26,16 @@ const CHAR_PRESSURE_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::Pressure);
 const CHAR_TEMPERATURE_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::Temperature);
+const CHAR_DOOR_ID: BleId =
+    BleId::from_standard_characteristic(StandardCharacteristicId::AlertStatus);
+
 
 struct ClientData {
     id: u16,
     humidity: f32,
     pressure: f32,
     temperature: f32,
+    door: Option<bool>,
 }
 
 impl ClientData {
@@ -38,6 +43,7 @@ impl ClientData {
         let mut temperature = None;
         let mut pressure = None;
         let mut humidity = None;
+        let mut door = None;
 
         for (c_id, data) in characteristics_data {
             match c_id {
@@ -45,7 +51,8 @@ impl ClientData {
                 CHAR_PRESSURE_ID => pressure = Some(f32::from_be_bytes(data.try_into().ok()?)),
                 CHAR_TEMPERATURE_ID => {
                     temperature = Some(f32::from_be_bytes(data.try_into().ok()?))
-                }
+                },
+                CHAR_DOOR_ID => door = Some(*data.first()? != 0),
                 _ => {}
             }
         }
@@ -55,28 +62,48 @@ impl ClientData {
             temperature: temperature?,
             pressure: pressure?,
             humidity: humidity?,
+            door
         })
     }
 
     fn print(&self) {
         println!(
-            "[ESP_{}] Humidity: {}  |  Pressure: {}  |  Temperature: {} ",
-            self.id, self.humidity, self.pressure, self.temperature
+            "[ESP_{}] Humidity: {}  |  Pressure: {}  |  Temperature: {} | Opened: {:?}",
+            self.id, self.humidity, self.pressure, self.temperature, self.door
         );
     }
-
-    fn send(&self, https_client: &mut HttpsClient) {
-        let send_data = format!(
-            "{{\"id\":{}, \"hum\":{}, \"press\":{}, \"temp\":{}}}",
-            self.id, self.humidity, self.pressure, self.temperature
-        );
+    
+    fn send_http(&self,https_client: &mut HttpsClient, uri: &str, data: String){
+        self.print();
         let content_type_header = HttpHeader::new(
             HttpHeaderType::ContentType,
             String::from("application/json"),
         );
-        self.print();
-        https_client.post(URI, vec![content_type_header], Some(send_data)).unwrap();
+        https_client.post(uri, vec![content_type_header], Some(data)).unwrap();
         https_client.wait_for_response(&mut []).unwrap();
+    }
+
+    fn send_sensor_data(&self, https_client: &mut HttpsClient) {
+        let send_data = format!(
+            "{{\"id\":{}, \"hum\":{}, \"press\":{}, \"temp\":{}}}",
+            self.id, self.humidity, self.pressure, self.temperature
+        );
+        self.send_http(https_client,MEASUREMENT_URI,send_data);
+    }
+
+    fn try_send_door_data(&self, https_client: &mut HttpsClient) {
+        if let Some(door) = self.door {
+            let send_data = format!(
+                "{{\"id\":{}, \"is_open\":{}}}",
+                self.id, door
+            );
+            self.send_http(https_client, ALERT_URI, send_data);
+        }        
+    }
+
+    fn send(&self, https_client: &mut HttpsClient){
+        self.send_sensor_data(https_client);
+        self.try_send_door_data(https_client);
     }
 }
 
@@ -88,6 +115,7 @@ fn create_service_for_client(client_id: u16) -> Service {
         Characteristic::new(&CHAR_HUMIDITY_ID, vec![]).writable(true),
         Characteristic::new(&CHAR_PRESSURE_ID, vec![]).writable(true),
         Characteristic::new(&CHAR_TEMPERATURE_ID, vec![]).writable(true),
+        Characteristic::new(&CHAR_DOOR_ID, vec![]).writable(true),
     ])
 }
 
@@ -122,12 +150,13 @@ fn initialize_wifi_connection<'a>(
 }
 
 /// Gathers data from the connected devices
-fn gather_data(server: &BleServer) -> Vec<ClientData> {
+fn gather_data(server: &mut BleServer) -> Vec<ClientData> {
     let mut client_datas = Vec::new();
     for client_id in 0..AMOUNT_OF_CLIENTS {
         let s_id = BleId::FromUuid16(SERVICE_ID + client_id);
         let characteristics_values = server.get_all_service_characteristics_data(&s_id).unwrap();
         if let Some(client_data) = ClientData::from(client_id, characteristics_values) {
+            server.set_service(&create_service_for_client(client_id)).unwrap();
             client_datas.push(client_data);
         }
     }
@@ -152,7 +181,7 @@ pub fn main() {
     loop {
         micro.wait_for_updates(Some(5000));
 
-        let data = gather_data(&server);
+        let data = gather_data(&mut server);
         data.iter().for_each(|d| d.print());
         send_all_data(&mut https_client, data);
     }
