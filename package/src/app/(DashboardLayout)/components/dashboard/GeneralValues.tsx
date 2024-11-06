@@ -9,7 +9,7 @@ const AMOUNT_OF_DAYS = 8;
 
 // Define los tipos de los props que el componente espera recibir
 interface GeneralValuesProps {
-    lastValues: ApiResponse;
+    lastValues: MeasurementsResponse;
 }
 
 const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {

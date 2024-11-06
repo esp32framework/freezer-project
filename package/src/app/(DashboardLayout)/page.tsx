@@ -13,7 +13,7 @@ const INTERVAL_OPTIONS = {
   3: 300, // 5 minutos
 };
 
-async function fetchData(): Promise<ApiResponse> {
+async function fetchMeasurements(): Promise<MeasurementsResponse> {
   try {
     const response = await fetch("/api/esp-data/get", { cache: "no-store" });
     if (!response.ok) throw new Error("Error fetching data");
@@ -36,17 +36,42 @@ async function fetchData(): Promise<ApiResponse> {
   }
 }
 
+async function fetchDoorsData(): Promise<DoorsDataResponse> {
+  try {
+    const response = await fetch("/api/door/get", { cache: "no-store" });
+    if (!response.ok) throw new Error("Error fetching data");
+    const data = await response.json();
+
+    const doors_data: DoorData[] = data.doors_data.rows.map(
+      (row: any) => ({
+        time: new Date(row.time),
+        espid: parseInt(row.espid),
+        is_open: row.is_open,
+      })
+    );
+
+    return { doors_data };
+  } catch (error) {
+    console.error("Fetch error:", error);
+    throw error;
+  }
+}
+
 const Dashboard = () => {
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [measurementsData, setMeasurementsData] = useState<MeasurementsResponse | null>(null);
+  const [doorsData, setDoorsData] = useState<DoorsDataResponse | null>(null);
   const [selectedInterval, setSelectedInterval] = useState(3); // Valor inicial: 5 minutos
 
   useEffect(() => {
     const updateData = async () => {
       try {
         console.log("Haciendo el fetch");
-        const newData = await fetchData();
-        console.log("data: ", newData);
-        setData(newData);
+        const newMeasurementsData = await fetchMeasurements();
+        const newDoorsData = await fetchDoorsData();
+        console.log("measurements: ", newMeasurementsData);
+        console.log("doors data: ", newDoorsData);
+        setMeasurementsData(newMeasurementsData);
+        setDoorsData(newDoorsData);
       } catch (error) {
         console.error("Error actualizando los datos:", error);
       }
@@ -108,16 +133,16 @@ const Dashboard = () => {
         </Box>
         <Grid container spacing={3}>
           <Grid item xs={12} lg={12}>
-            {data && <GeneralValues lastValues={data} />}
+            {measurementsData && <GeneralValues lastValues={measurementsData} />}
           </Grid>
           <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="0" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="0" />}
           </Grid>
           <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="1" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="1" />}
           </Grid>
           <Grid item xs={4}>
-            {data && <AvgTemperature lastValues={data} espid="2" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="2" />}
           </Grid>
         </Grid>
       </Box>

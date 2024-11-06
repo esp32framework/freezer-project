@@ -16,7 +16,7 @@ import CustomModal from "./DropDownFilters";
 import DropDownFilters from "./DropDownFilters";
 
 interface DataTableProps {
-  lastValues: ApiResponse;
+  lastValues: MeasurementsResponse;
 }
 
 const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
