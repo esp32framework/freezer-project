@@ -18,13 +18,13 @@ pub static MEASUREMENT_DELAY: Duration =
 
 pub fn create_bme280(
     micro: &mut Microcontroller,
-    sda_num: u8,
-    scl_num: u8,
+    sda_num: usize,
+    scl_num: usize,
 ) -> BME280<I2cDriver<'static>> {
     // TODO: View errors
     let used_peripherals: Vec<Peripheral> = vec![
-        Peripheral::Pin(sda_num),
-        Peripheral::Pin(scl_num),
+        Peripheral::Pin(sda_num as u8),
+        Peripheral::Pin(scl_num as u8),
         Peripheral::I2C,
     ];
     let mut used_peripherals = micro.register_external_peripherals_use(used_peripherals);

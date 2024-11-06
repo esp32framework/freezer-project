@@ -29,7 +29,6 @@ const CHAR_TEMPERATURE_ID: BleId =
 const CHAR_DOOR_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::AlertStatus);
 
-
 struct ClientData {
     id: u16,
     humidity: f32,
@@ -51,7 +50,7 @@ impl ClientData {
                 CHAR_PRESSURE_ID => pressure = Some(f32::from_be_bytes(data.try_into().ok()?)),
                 CHAR_TEMPERATURE_ID => {
                     temperature = Some(f32::from_be_bytes(data.try_into().ok()?))
-                },
+                }
                 CHAR_DOOR_ID => door = data.first().map(|&value| value != 0),
                 _ => {}
             }
@@ -62,7 +61,7 @@ impl ClientData {
             temperature: temperature?,
             pressure: pressure?,
             humidity: humidity?,
-            door
+            door,
         })
     }
 
@@ -72,14 +71,16 @@ impl ClientData {
             self.id, self.humidity, self.pressure, self.temperature, self.door
         );
     }
-    
-    fn send_http(&self,https_client: &mut HttpsClient, uri: &str, data: String){
+
+    fn send_http(&self, https_client: &mut HttpsClient, uri: &str, data: String) {
         self.print();
         let content_type_header = HttpHeader::new(
             HttpHeaderType::ContentType,
             String::from("application/json"),
         );
-        https_client.post(uri, vec![content_type_header], Some(data)).unwrap();
+        https_client
+            .post(uri, vec![content_type_header], Some(data))
+            .unwrap();
         https_client.wait_for_response(&mut []).unwrap();
     }
 
@@ -88,20 +89,17 @@ impl ClientData {
             "{{\"id\":{}, \"hum\":{}, \"press\":{}, \"temp\":{}}}",
             self.id, self.humidity, self.pressure, self.temperature
         );
-        self.send_http(https_client,MEASUREMENT_URI,send_data);
+        self.send_http(https_client, MEASUREMENT_URI, send_data);
     }
 
     fn try_send_door_data(&self, https_client: &mut HttpsClient) {
         if let Some(door) = self.door {
-            let send_data = format!(
-                "{{\"id\":{}, \"is_open\":{}}}",
-                self.id, door
-            );
+            let send_data = format!("{{\"id\":{}, \"is_open\":{}}}", self.id, door);
             self.send_http(https_client, ALERT_URI, send_data);
-        }        
+        }
     }
 
-    fn send(&self, https_client: &mut HttpsClient){
+    fn send(&self, https_client: &mut HttpsClient) {
         self.send_sensor_data(https_client);
         self.try_send_door_data(https_client);
     }
@@ -132,7 +130,7 @@ fn initialize_ble_server<'a>(micro: &mut Microcontroller<'a>) -> BleServer<'a> {
     let mut server = micro
         .ble_server(ADVERTISING_NAME.to_string(), &services)
         .unwrap();
-    server.connection_handler(|server, con_info| {server.start().unwrap()});
+    server.connection_handler(|server, _| server.start().unwrap());
     server
 }
 
@@ -140,7 +138,8 @@ fn initialize_wifi_connection<'a>(
     micro: &mut Microcontroller<'a>,
 ) -> (WifiDriver<'a>, HttpsClient) {
     let mut wifi = micro.get_wifi_driver().unwrap();
-    wifi.connect(SSID, Some(PASSWORD.to_string()), None).unwrap();
+    wifi.connect(SSID, Some(PASSWORD.to_string()), None)
+        .unwrap();
 
     let https_client = wifi.get_https_client().unwrap();
 
@@ -155,12 +154,13 @@ fn gather_data(server: &mut BleServer) -> Vec<ClientData> {
         let s_id = BleId::FromUuid16(SERVICE_ID + client_id);
         let characteristics_values = server.get_all_service_characteristics_data(&s_id).unwrap();
         if let Some(client_data) = ClientData::from(client_id, characteristics_values) {
-            server.set_service(&create_service_for_client(client_id)).unwrap();
+            server
+                .set_service(&create_service_for_client(client_id))
+                .unwrap();
             client_datas.push(client_data);
         }
     }
     client_datas
-    
 }
 
 /// Sends the collected data of the devices to the web application

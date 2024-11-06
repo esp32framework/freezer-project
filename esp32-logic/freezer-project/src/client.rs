@@ -6,7 +6,10 @@ use esp32framework::{
     ble::{
         utils::{ble_standard_uuids::StandardCharacteristicId, RemoteCharacteristic},
         BleClient, BleId,
-    }, gpio::digital::{DigitalOut, InterruptType}, timer_driver::TimerDriver, Microcontroller
+    },
+    gpio::digital::{DigitalOut, InterruptType},
+    timer_driver::TimerDriver,
+    Microcontroller,
 };
 use esp_idf_svc::hal::{delay::Delay, gpio::Level};
 use setup_bme280::*;
@@ -21,8 +24,14 @@ const CHAR_PRESSURE_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::Pressure);
 const CHAR_TEMPERATURE_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::Temperature);
-const CHAR_DOOR_ID: BleId = 
+const CHAR_DOOR_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::AlertStatus);
+
+const DOOR_PIN: usize = 2;
+const LED_PIN: usize = 20;
+const ALARM_PIN: usize = 19;
+const SENSOR_SDA_PIN: usize = 11;
+const SENSOR_SCL_PIN: usize = 10;
 
 struct SensorsCharacteristics {
     humidity: RemoteCharacteristic,
@@ -35,6 +44,7 @@ impl SensorsCharacteristics {
         println!("Temperature: {}°C", measurements.temperature);
         println!("Pressure: {}hPa", measurements.pressure);
         println!("Humidity: {}%", measurements.humidity);
+        
         self.humidity
             .write(&measurements.humidity.to_be_bytes())
             .unwrap();
@@ -83,59 +93,85 @@ fn initialize_ble_client(micro: &mut Microcontroller) -> BleClient {
     ble
 }
 
-fn get_server_characteristic(client: &mut BleClient) -> (SensorsCharacteristics, RemoteCharacteristic) {
+fn get_server_characteristic(
+    client: &mut BleClient,
+) -> (SensorsCharacteristics, RemoteCharacteristic) {
     let service_id = BleId::FromUuid16(SERVICE_ID + ESP_ID);
-    let sensor_characteristics = SensorsCharacteristics::from(client.get_all_characteristics(&service_id).unwrap());
-    let door_characteristic = client.get_characteristic(&service_id, &CHAR_DOOR_ID).unwrap();
+    let sensor_characteristics =
+        SensorsCharacteristics::from(client.get_all_characteristics(&service_id).unwrap());
+    let door_characteristic = client
+        .get_characteristic(&service_id, &CHAR_DOOR_ID)
+        .unwrap();
     (sensor_characteristics, door_characteristic)
 }
 
-fn handle_door(opened: Level, led: &mut DigitalOut, alarm: &Rc<RefCell<DigitalOut>>, timer_driver: &mut TimerDriver, door_char: &Rc<RefCell<RemoteCharacteristic>>){
+fn handle_door(
+    opened: Level,
+    led: &mut DigitalOut,
+    alarm: &Rc<RefCell<DigitalOut>>,
+    timer_driver: &mut TimerDriver,
+    door_char: &Rc<RefCell<RemoteCharacteristic>>,
+) {
     match opened {
         Level::Low => timer_driver.enable().unwrap(),
         Level::High => {
             timer_driver.disable().unwrap();
             let mut alarm = alarm.borrow_mut();
-            if alarm.get_level() == Level::High{
+            if alarm.get_level() == Level::High {
                 door_char.borrow_mut().write(&[false as u8]).unwrap();
                 alarm.set_low().unwrap();
             }
-        },
+        }
     }
     led.toggle().unwrap();
 }
 
-fn set_alarm(micro: &mut Microcontroller<'static>, door_characteristic: RemoteCharacteristic){
-    let mut door = micro.set_pin_as_digital_in(9).unwrap();
-    let mut led = micro.set_pin_as_digital_out(3).unwrap();
+fn set_alarm(micro: &mut Microcontroller<'static>, door_characteristic: RemoteCharacteristic) {
+    let mut door = micro.set_pin_as_digital_in(DOOR_PIN).unwrap();
+    let mut led = micro.set_pin_as_digital_out(LED_PIN).unwrap();
     let mut timer_driver = micro.get_timer_driver().unwrap();
 
     let sharable_door_char = Rc::new(RefCell::from(door_characteristic));
     let sharable_door_char_ref = sharable_door_char.clone();
-    let sharable_alarm = Rc::new(RefCell::from(micro.set_pin_as_digital_out(7).unwrap()));
+    let sharable_alarm = Rc::new(RefCell::from(
+        micro.set_pin_as_digital_out(ALARM_PIN).unwrap(),
+    ));
     let sharable_alarm_ref = sharable_alarm.clone();
-    led.set_high().unwrap();
+    led.set_low().unwrap();
     door.set_debounce(1_000_000);
 
     timer_driver.interrupt_after(10 * 1_000_000, move || {
         println!("WIUWIUWIU");
-        sharable_door_char.borrow_mut().write(&[true as u8]).unwrap();
+        sharable_door_char
+            .borrow_mut()
+            .write(&[true as u8])
+            .unwrap();
         sharable_alarm.borrow_mut().set_high().unwrap();
     });
-    door.trigger_on_interrupt(move |level|
-        handle_door(level, &mut led, &sharable_alarm_ref, &mut timer_driver, &sharable_door_char_ref),
-        InterruptType::AnyEdgeNextEdgeIsNeg).unwrap();
+    door.trigger_on_interrupt(
+        move |level| {
+            handle_door(
+                level,
+                &mut led,
+                &sharable_alarm_ref,
+                &mut timer_driver,
+                &sharable_door_char_ref,
+            )
+        },
+        InterruptType::AnyEdgeNextEdgeIsNeg,
+    )
+    .unwrap();
 }
 
 fn main() {
     let mut micro = Microcontroller::take();
-    
+
     let mut client = initialize_ble_client(&mut micro);
     let (mut sensor_characteristics, door_characteristic) = get_server_characteristic(&mut client);
-    
+
     set_alarm(&mut micro, door_characteristic);
 
-    let mut sensor = create_bme280(&mut micro, 11, 10);
+    let mut sensor = create_bme280(&mut micro, SENSOR_SDA_PIN, SENSOR_SCL_PIN);
     let mut delay = Delay::new(MEASUREMENT_DELAY.as_millis() as u32);
 
     loop {
