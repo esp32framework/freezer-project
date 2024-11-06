@@ -11,8 +11,8 @@ use esp32framework::{
 };
 
 const ADVERTISING_NAME: &str = "FreezzerServer";
-const SSID: &str = "WIFI_SSID";
-const PASSWORD: &str = "WIFI_PASS";
+const SSID: &str = "WIFI SSID";
+const PASSWORD: &str = "password";
 const MEASUREMENT_URI: &str = "https://freezer-project.vercel.app/api/esp-data/post";
 const ALERT_URI: &str = "https://freezer-project.vercel.app/api/door/post";
 
@@ -52,7 +52,7 @@ impl ClientData {
                 CHAR_TEMPERATURE_ID => {
                     temperature = Some(f32::from_be_bytes(data.try_into().ok()?))
                 },
-                CHAR_DOOR_ID => door = Some(*data.first()? != 0),
+                CHAR_DOOR_ID => door = data.first().map(|&value| value != 0),
                 _ => {}
             }
         }
@@ -129,21 +129,20 @@ fn create_services() -> Vec<Service> {
 
 fn initialize_ble_server<'a>(micro: &mut Microcontroller<'a>) -> BleServer<'a> {
     let services = create_services();
-    micro
+    let mut server = micro
         .ble_server(ADVERTISING_NAME.to_string(), &services)
-        .unwrap()
+        .unwrap();
+    server.connection_handler(|server, con_info| {server.start().unwrap()});
+    server
 }
 
 fn initialize_wifi_connection<'a>(
     micro: &mut Microcontroller<'a>,
 ) -> (WifiDriver<'a>, HttpsClient) {
     let mut wifi = micro.get_wifi_driver().unwrap();
-    micro
-        .block_on(wifi.connect(SSID, Some(PASSWORD.to_string())))
-        .unwrap(); // TODO implementar version no async, y ver tema timeout
+    wifi.connect(SSID, Some(PASSWORD.to_string()), None).unwrap();
 
     let https_client = wifi.get_https_client().unwrap();
-    //let http_client = wifi.get_http_client().unwrap();
 
     println!("wifi_connected");
     (wifi, https_client) // TODO que los http clients, tengan algun lifetime dependiendo del wifi
@@ -161,6 +160,7 @@ fn gather_data(server: &mut BleServer) -> Vec<ClientData> {
         }
     }
     client_datas
+    
 }
 
 /// Sends the collected data of the devices to the web application
