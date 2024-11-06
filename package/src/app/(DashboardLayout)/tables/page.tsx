@@ -2,9 +2,8 @@
 import { useState, useEffect } from "react";
 import { Grid, Box, Typography, Select, MenuItem } from "@mui/material";
 import PageContainer from "@/app/(DashboardLayout)/components/container/PageContainer";
-import GeneralValues from "@/app/(DashboardLayout)/components/dashboard/GeneralValues";
-import AvgTemperature from "@/app/(DashboardLayout)/components/dashboard/AvgMeasurements";
 import DataTable from "../components/dashboard/DataTable";
+import CustomModal from "../components/dashboard/DropDownFilters";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +13,7 @@ const INTERVAL_OPTIONS = {
   3: 300, // 5 minutos
 };
 
-async function fetchData(): Promise<ApiResponse> {
+async function fetchData(): Promise<MeasurementsResponse> {
   try {
     const response = await fetch("/api/test", { cache: "no-store" });
     if (!response.ok) throw new Error("Error fetching data");
@@ -38,7 +37,7 @@ async function fetchData(): Promise<ApiResponse> {
 }
 
 const Table = () => {
-  const [data, setData] = useState<ApiResponse | null>(null);
+  const [data, setData] = useState<MeasurementsResponse | null>(null);
   const [selectedInterval, setSelectedInterval] = useState(3); // Valor inicial: 5 minutos
 
   useEffect(() => {

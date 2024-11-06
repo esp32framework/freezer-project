@@ -1,50 +1,66 @@
-import dynamic from "next/dynamic";
-import { useTheme } from "@mui/material/styles";
-import { Stack, Typography, Avatar, Fab, Box, Divider } from "@mui/material";
+import {
+  Stack,
+  Typography,
+  Avatar,
+  Fab,
+  Box,
+  Divider,
+  Badge,
+  Popover,
+} from "@mui/material";
 import {
   IconArrowDownRight,
   IconArrowUpRight,
   IconTemperature,
   IconCloud,
-  IconArrowsMinimize
+  IconArrowsMinimize,
+  IconArrowRight,
+  IconDoor,
 } from "@tabler/icons-react";
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
+import { useState } from "react";
 
 interface AvgTemperatureProps {
-  lastValues: ApiResponse;
+  lastValues: MeasurementsResponse;
+  doorsDataResponse: DoorsDataResponse | null;
   espid: string;
 }
 
 const SUBTITLE_VARIANT = "h5";
 
-const getMeasurementInfo = (measurements: number[]): [number, number, JSX.Element] => {
+const getMeasurementInfo = (
+  measurements: number[]
+): [number, number, JSX.Element] => {
   //const measurementsArray = measurements.map((row) => row.temperature);
   const avg: number =
     measurements.reduce((a, b) => a + b, 0) / measurements.length;
   const variation: number = parseFloat(
-    (
-      measurements[0] -
-      measurements[1]
-    ).toFixed(2)
+    (measurements[0] - measurements[1]).toFixed(2)
   );
   let icon;
   if (variation < 0) {
     icon = <IconArrowDownRight width={20} color="red" />;
-  } else {
+  }
+  if (variation > 0) {
     icon = <IconArrowUpRight width={20} color="green" />;
+  } else {
+    icon = <IconArrowRight width={20} color="grey" />;
   }
 
   return [avg, variation, icon];
 };
 
-const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) => {
+const AvgTemperature: React.FC<AvgTemperatureProps> = ({
+  lastValues,
+  doorsDataResponse,
+  espid,
+}) => {
   // chart color
-  const theme = useTheme();
-  const secondary = theme.palette.secondary.main;
-  const secondarylight = "#f5fcff";
   const errorlight = "#fdede8";
 
-  let espValues = lastValues.measurements.filter((row) => row.espid.toString()  === espid);
+  let espValues = lastValues.measurements.filter(
+    (row) => row.espid.toString() === espid
+  );
 
   console.log("Data for esp ", espid, " is: ", espValues);
 
@@ -59,11 +75,26 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
   );
 
   const title = "Promedios ESP-" + espid;
+  const popupText = "Heladera " + espid + " abierta hace mas de 5 minutos";
+
+  const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
+
+  const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
+    setAnchorEl(event.currentTarget); // Asigna el elemento SVG como anchorEl
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null); // Cierra el Popover
+  };
+
+  const open = Boolean(anchorEl);
+  // const open = true;
+  const id = open ? "simple-popover" : undefined;
+
+  const showDoorIcon = doorsDataResponse == null ? false : doorsDataResponse.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open;  
 
   return (
-    <DashboardCard
-      title={title}
-    >
+    <DashboardCard>
       <>
         <Box marginBottom={4}>
           <Stack
@@ -73,7 +104,61 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
             justifyContent="space-between"
             marginBottom={3}
           >
-            <Typography variant={SUBTITLE_VARIANT} fontWeight="700" mt="-20px" marginRight={10}>
+            <Typography variant="h4" marginBottom={4}>
+              {title}
+            </Typography>
+            {showDoorIcon && (
+            <Badge
+              badgeContent={
+                <span style={{ fontSize: "1.0rem", color: "white" }}>!</span>
+              }
+              sx={{
+                "& .MuiBadge-badge": {
+                  backgroundColor: "#DC143C",
+                  color: "white",
+                },
+              }}
+            >
+              <IconDoor
+              width={20}
+              color="black"
+              aria-describedby={id}
+              onClick={handleClick} // Utiliza el tipo de evento correcto
+              />
+            
+            </Badge>
+            )}
+            
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
+              <Typography sx={{ p: 2 }}>{popupText}</Typography>
+            </Popover>
+          </Stack>
+          <Stack
+            direction="row"
+            spacing={1}
+            alignItems="center"
+            justifyContent="space-between"
+            marginBottom={3}
+          >
+            <Typography
+              variant={SUBTITLE_VARIANT}
+              fontWeight="700"
+              mt="-20px"
+              marginRight={10}
+            >
               Temperatura
             </Typography>
             <Fab color="secondary" size="medium" sx={{ color: "#ffffff" }}>
@@ -98,16 +183,21 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
         </Box>
 
         <Divider />
-        
+
         <Box marginBottom={4} marginTop={5}>
-        <Stack
+          <Stack
             direction="row"
             spacing={1}
             alignItems="center"
             justifyContent="space-between"
             marginBottom={3}
           >
-            <Typography variant={SUBTITLE_VARIANT} fontWeight="700" mt="-20px" marginRight={10}>
+            <Typography
+              variant={SUBTITLE_VARIANT}
+              fontWeight="700"
+              mt="-20px"
+              marginRight={10}
+            >
               Presión
             </Typography>
             <Fab color="secondary" size="medium" sx={{ color: "#ffffff" }}>
@@ -131,14 +221,19 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({ lastValues, espid }) =>
         </Box>
         <Divider />
         <Box marginTop={5}>
-        <Stack
+          <Stack
             direction="row"
             spacing={1}
             alignItems="center"
             justifyContent="space-between"
             marginBottom={3}
           >
-            <Typography variant={SUBTITLE_VARIANT} fontWeight="700" mt="-20px" marginRight={10}>
+            <Typography
+              variant={SUBTITLE_VARIANT}
+              fontWeight="700"
+              mt="-20px"
+              marginRight={10}
+            >
               Humedad
             </Typography>
             <Fab color="secondary" size="medium" sx={{ color: "#ffffff" }}>

@@ -9,7 +9,7 @@ const AMOUNT_OF_DAYS = 8;
 
 // Define los tipos de los props que el componente espera recibir
 interface GeneralValuesProps {
-    lastValues: ApiResponse;
+    lastValues: MeasurementsResponse;
 }
 
 const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
@@ -24,8 +24,6 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
 
-
-    // chart
     const optionscolumnchart: any = {
         chart: {
             type: 'area',
@@ -38,10 +36,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
         },
         colors: [primary, secondary],
         xaxis: {
-            categories: lastValues.measurements
-                        .filter((row) => row.espid == 1)
-                        .map((row) => row.time.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,}).replace(',', '-'))
-                        .reverse(),
+            type: 'datetime',  // Asegura que el eje x interprete los valores de tiempo
             axisBorder: {
                 show: false,
             },
@@ -50,37 +45,37 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
 
     const data = {
         temperature: [
+            { name: 'ESP 0', data: lastValues.measurements
+                .filter((row) => row.espid === 0)
+                .map((row) => ({ x: new Date(row.time), y: row.temperature })) },
             { name: 'ESP 1', data: lastValues.measurements
                 .filter((row) => row.espid === 1)
-                .map((row) => row.temperature) },
+                .map((row) => ({ x: new Date(row.time), y: row.temperature })) },
             { name: 'ESP 2', data: lastValues.measurements
                 .filter((row) => row.espid === 2)
-                .map((row) => row.temperature) },
-            { name: 'ESP 3', data: lastValues.measurements
-                .filter((row) => row.espid === 3)
-                .map((row) => row.temperature) },
+                .map((row) => ({ x: new Date(row.time), y: row.temperature })) },
         ],
         humidity: [
+            { name: 'ESP 0', data: lastValues.measurements
+                .filter((row) => row.espid === 0)
+                .map((row) => ({ x: new Date(row.time), y: row.humidity })) },
             { name: 'ESP 1', data: lastValues.measurements
                 .filter((row) => row.espid === 1)
-                .map((row) => row.humidity) },
+                .map((row) => ({ x: new Date(row.time), y: row.humidity })) },
             { name: 'ESP 2', data: lastValues.measurements
                 .filter((row) => row.espid === 2)
-                .map((row) => row.humidity) },
-            { name: 'ESP 3', data: lastValues.measurements
-                .filter((row) => row.espid === 3)
-                .map((row) => row.humidity) },
+                .map((row) => ({ x: new Date(row.time), y: row.humidity })) },
         ],
         pressure: [
+            { name: 'ESP 0', data: lastValues.measurements
+                .filter((row) => row.espid === 0)
+                .map((row) => ({ x: new Date(row.time), y: row.pressure })) },
             { name: 'ESP 1', data: lastValues.measurements
                 .filter((row) => row.espid === 1)
-                .map((row) => row.pressure) },
+                .map((row) => ({ x: new Date(row.time), y: row.pressure })) },
             { name: 'ESP 2', data: lastValues.measurements
                 .filter((row) => row.espid === 2)
-                .map((row) => row.pressure) },
-            { name: 'ESP 3', data: lastValues.measurements
-                .filter((row) => row.espid === 3)
-                .map((row) => row.pressure) },
+                .map((row) => ({ x: new Date(row.time), y: row.pressure })) },
         ],
     };
     
