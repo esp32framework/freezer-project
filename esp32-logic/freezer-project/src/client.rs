@@ -5,8 +5,9 @@ use bme280::Measurements;
 use esp32framework::{
     ble::{
         utils::{ble_standard_uuids::StandardCharacteristicId, RemoteCharacteristic},
-        BleClient, BleId,
+        BleClient, BleError, BleId,
     },
+    esp32_framework_error::Esp32FrameworkError,
     gpio::digital::{DigitalOut, InterruptType},
     timer_driver::TimerDriver,
     Microcontroller,
@@ -17,6 +18,9 @@ use setup_bme280::*;
 const SERVER_NAME: &str = "FreezzerServer";
 const SERVICE_ID: u16 = 0x1000;
 const ESP_ID: u16 = 1;
+const DOOR_DEBOUNCE: u64 = 200_000;
+const ALARM_TIMEOUT: u64 = 10_000_000;
+const SEND_RATE: u32 = 5000;
 
 const CHAR_HUMIDITY_ID: BleId =
     BleId::from_standard_characteristic(StandardCharacteristicId::Humidity);
@@ -40,20 +44,15 @@ struct SensorsCharacteristics {
 }
 
 impl SensorsCharacteristics {
-    fn write<E>(&mut self, measurements: Measurements<E>) {
+    fn write<E>(&mut self, measurements: Measurements<E>) -> Result<(), BleError> {
         println!("Temperature: {}°C", measurements.temperature);
         println!("Pressure: {}hPa", measurements.pressure);
         println!("Humidity: {}%", measurements.humidity);
-        
-        self.humidity
-            .write(&measurements.humidity.to_be_bytes())
-            .unwrap();
-        self.pressure
-            .write(&measurements.pressure.to_be_bytes())
-            .unwrap();
+
+        self.humidity.write(&measurements.humidity.to_be_bytes())?;
+        self.pressure.write(&measurements.pressure.to_be_bytes())?;
         self.temperature
             .write(&measurements.temperature.to_be_bytes())
-            .unwrap();
     }
 }
 
@@ -80,29 +79,22 @@ impl From<Vec<RemoteCharacteristic>> for SensorsCharacteristics {
     }
 }
 
-fn initialize_ble_client(micro: &mut Microcontroller) -> BleClient {
-    let mut ble = micro.ble_client().unwrap();
-    println!("Attempting connection with server: {SERVER_NAME}");
-    let device = ble
-        .find_device_of_name(None, SERVER_NAME.to_string())
-        .unwrap();
+fn initialize_ble_client(micro: &mut Microcontroller) -> Result<BleClient, BleError> {
+    let mut ble = micro.ble_client()?;
+    let device = ble.find_device_of_name(None, SERVER_NAME.to_string())?;
+    ble.connect_to_device(device)?;
 
-    ble.connect_to_device(device).unwrap();
-    println!("Connected to server {SERVER_NAME}");
-
-    ble
+    Ok(ble)
 }
 
 fn get_server_characteristic(
     client: &mut BleClient,
-) -> (SensorsCharacteristics, RemoteCharacteristic) {
+) -> Result<(SensorsCharacteristics, RemoteCharacteristic), BleError> {
     let service_id = BleId::FromUuid16(SERVICE_ID + ESP_ID);
     let sensor_characteristics =
-        SensorsCharacteristics::from(client.get_all_characteristics(&service_id).unwrap());
-    let door_characteristic = client
-        .get_characteristic(&service_id, &CHAR_DOOR_ID)
-        .unwrap();
-    (sensor_characteristics, door_characteristic)
+        SensorsCharacteristics::from(client.get_all_characteristics(&service_id)?);
+    let door_characteristic = client.get_characteristic(&service_id, &CHAR_DOOR_ID)?;
+    Ok((sensor_characteristics, door_characteristic))
 }
 
 fn handle_door(
@@ -126,27 +118,31 @@ fn handle_door(
     led.toggle().unwrap();
 }
 
-fn set_alarm(micro: &mut Microcontroller<'static>, door_characteristic: RemoteCharacteristic) {
-    let mut door = micro.set_pin_as_digital_in(DOOR_PIN).unwrap();
-    let mut led = micro.set_pin_as_digital_out(LED_PIN).unwrap();
-    let mut timer_driver = micro.get_timer_driver().unwrap();
+fn alarm_trigger(door_char: &Rc<RefCell<RemoteCharacteristic>>, alarm: &Rc<RefCell<DigitalOut>>) {
+    println!("Alarm triggered");
+    _ = door_char.borrow_mut().write(&[true as u8]);
+    alarm.borrow_mut().set_high().unwrap();
+}
+
+fn set_alarm(
+    micro: &mut Microcontroller<'static>,
+    door_characteristic: RemoteCharacteristic,
+) -> Result<(), Esp32FrameworkError> {
+    let mut door = micro.set_pin_as_digital_in(DOOR_PIN)?;
+    let mut led = micro.set_pin_as_digital_out(LED_PIN)?;
+    let mut timer_driver = micro.get_timer_driver()?;
+    let alarm = micro.set_pin_as_digital_out(ALARM_PIN)?;
 
     let sharable_door_char = Rc::new(RefCell::from(door_characteristic));
     let sharable_door_char_ref = sharable_door_char.clone();
-    let sharable_alarm = Rc::new(RefCell::from(
-        micro.set_pin_as_digital_out(ALARM_PIN).unwrap(),
-    ));
+    let sharable_alarm = Rc::new(RefCell::from(alarm));
     let sharable_alarm_ref = sharable_alarm.clone();
-    led.set_low().unwrap();
-    door.set_debounce(1_000_000);
 
-    timer_driver.interrupt_after(10 * 1_000_000, move || {
-        println!("WIUWIUWIU");
-        sharable_door_char
-            .borrow_mut()
-            .write(&[true as u8])
-            .unwrap();
-        sharable_alarm.borrow_mut().set_high().unwrap();
+    led.set_low()?;
+    door.set_debounce(DOOR_DEBOUNCE);
+
+    timer_driver.interrupt_after(ALARM_TIMEOUT, move || {
+        alarm_trigger(&sharable_door_char, &sharable_alarm)
     });
     door.trigger_on_interrupt(
         move |level| {
@@ -159,24 +155,26 @@ fn set_alarm(micro: &mut Microcontroller<'static>, door_characteristic: RemoteCh
             )
         },
         InterruptType::AnyEdgeNextEdgeIsNeg,
-    )
-    .unwrap();
+    )?;
+    Ok(())
 }
 
 fn main() {
     let mut micro = Microcontroller::take();
 
-    let mut client = initialize_ble_client(&mut micro);
-    let (mut sensor_characteristics, door_characteristic) = get_server_characteristic(&mut client);
+    let mut client = initialize_ble_client(&mut micro).unwrap();
+    let (mut sensor_characteristics, door_characteristic) =
+        get_server_characteristic(&mut client).unwrap();
 
-    set_alarm(&mut micro, door_characteristic);
+    set_alarm(&mut micro, door_characteristic).unwrap();
 
-    let mut sensor = create_bme280(&mut micro, SENSOR_SDA_PIN, SENSOR_SCL_PIN);
+    let mut sensor = create_bme280(&mut micro, SENSOR_SDA_PIN, SENSOR_SCL_PIN).unwrap();
     let mut delay = Delay::new(MEASUREMENT_DELAY.as_millis() as u32);
 
     loop {
-        micro.wait_for_updates(Some(3000));
-        let data = sensor.measure(&mut delay).unwrap();
-        sensor_characteristics.write(data);
+        micro.wait_for_updates(Some(SEND_RATE));
+        if let Ok(data) = sensor.measure(&mut delay) {
+            _ = sensor_characteristics.write(data);
+        }
     }
 }
