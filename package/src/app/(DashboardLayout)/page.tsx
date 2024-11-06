@@ -136,13 +136,13 @@ const Dashboard = () => {
             {measurementsData && <GeneralValues lastValues={measurementsData} />}
           </Grid>
           <Grid item xs={4}>
-            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="0" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} doorsDataResponse={doorsData} espid="0" />}
           </Grid>
           <Grid item xs={4}>
-            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="1" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} doorsDataResponse={doorsData} espid="1" />}
           </Grid>
           <Grid item xs={4}>
-            {measurementsData && <AvgTemperature lastValues={measurementsData} espid="2" />}
+            {measurementsData && <AvgTemperature lastValues={measurementsData} doorsDataResponse={doorsData} espid="2" />}
           </Grid>
         </Grid>
       </Box>

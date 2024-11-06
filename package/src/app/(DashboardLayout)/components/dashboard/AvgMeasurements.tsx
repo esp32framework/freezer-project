@@ -22,6 +22,7 @@ import { useState } from "react";
 
 interface AvgTemperatureProps {
   lastValues: MeasurementsResponse;
+  doorsDataResponse: DoorsDataResponse | null;
   espid: string;
 }
 
@@ -51,6 +52,7 @@ const getMeasurementInfo = (
 
 const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   lastValues,
+  doorsDataResponse,
   espid,
 }) => {
   // chart color
@@ -73,7 +75,7 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   );
 
   const title = "Promedios ESP-" + espid;
-  const popupText = "Heladera " + espid + " abierta hace mas de 5 minutos"
+  const popupText = "Heladera " + espid + " abierta hace mas de 5 minutos";
 
   const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
 
@@ -86,7 +88,10 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   };
 
   const open = Boolean(anchorEl);
+  // const open = true;
   const id = open ? "simple-popover" : undefined;
+
+  const showDoorIcon = doorsDataResponse == null ? false : doorsDataResponse.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open;  
 
   return (
     <DashboardCard>
@@ -102,38 +107,44 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
             <Typography variant="h4" marginBottom={4}>
               {title}
             </Typography>
+            {showDoorIcon && (
             <Badge
-        badgeContent={<span style={{ fontSize: "1.0rem", color: "white" }}>!</span>}
-        sx={{
-          "& .MuiBadge-badge": {
-            backgroundColor: "#DC143C",
-            color: "white",
-          },
-        }}
-      >
-        <IconDoor
-          width={20}
-          color="black"
-          aria-describedby={id}
-          onClick={handleClick} // Utiliza el tipo de evento correcto
-        />
-      </Badge>
-      <Popover
-        id={id}
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
-      >
-        <Typography sx={{ p: 2 }}>{popupText}</Typography>
-      </Popover>
+              badgeContent={
+                <span style={{ fontSize: "1.0rem", color: "white" }}>!</span>
+              }
+              sx={{
+                "& .MuiBadge-badge": {
+                  backgroundColor: "#DC143C",
+                  color: "white",
+                },
+              }}
+            >
+              <IconDoor
+              width={20}
+              color="black"
+              aria-describedby={id}
+              onClick={handleClick} // Utiliza el tipo de evento correcto
+              />
+            
+            </Badge>
+            )}
+            
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
+              <Typography sx={{ p: 2 }}>{popupText}</Typography>
+            </Popover>
           </Stack>
           <Stack
             direction="row"
