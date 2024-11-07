@@ -1,7 +1,8 @@
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   const doors_data = await sql`
     SELECT *
@@ -12,5 +13,7 @@ export async function GET(request: Request) {
         WHERE d1.espid = d2.espid
     );`;
 
-  return NextResponse.json({ doors_data }, { status: 200 });
+    const resp = NextResponse.json({ doors_data }, { status: 200 });
+    resp.headers.set('Cache-Control', 'no-store');
+    return resp;
 }
