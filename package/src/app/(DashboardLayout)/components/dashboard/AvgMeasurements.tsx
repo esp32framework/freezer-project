@@ -91,7 +91,7 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   // const open = true;
   const id = open ? "simple-popover" : undefined;
 
-  const showDoorIcon = doorsDataResponse == null ? false : doorsDataResponse.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open;  
+  const showDoorIcon = (doorsDataResponse == null || doorsDataResponse.doors_data.length) == 0 ? false : doorsDataResponse?.doors_data.filter((doorData) => doorData.espid == Number(espid)); 
 
   return (
     <DashboardCard>
