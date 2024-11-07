@@ -20,6 +20,8 @@ import {
 import DashboardCard from "@/app/(DashboardLayout)/components/shared/DashboardCard";
 import { useState } from "react";
 
+export const dynamic = "force-dynamic";
+
 interface AvgTemperatureProps {
   lastValues: MeasurementsResponse;
   doorsDataResponse: DoorsDataResponse | null;
@@ -91,7 +93,8 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   // const open = true;
   const id = open ? "simple-popover" : undefined;
 
-  const showDoorIcon = doorsDataResponse == null ? false : doorsDataResponse.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open;  
+  const showDoorIcon = 
+  (doorsDataResponse == null || doorsDataResponse.doors_data.length) == 0 ? false : doorsDataResponse?.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open; 
 
   return (
     <DashboardCard>

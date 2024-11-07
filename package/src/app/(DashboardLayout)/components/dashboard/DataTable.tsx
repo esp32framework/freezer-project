@@ -12,8 +12,9 @@ import {
 import DownloadIcon from "@mui/icons-material/Download";
 import DashboardCard from "@/app/(DashboardLayout)//components/shared/DashboardCard";
 import { useState } from "react";
-import CustomModal from "./DropDownFilters";
 import DropDownFilters from "./DropDownFilters";
+
+export const dynamic = "force-dynamic";
 
 interface DataTableProps {
   lastValues: MeasurementsResponse;

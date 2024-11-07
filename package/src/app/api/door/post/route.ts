@@ -2,7 +2,7 @@ import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const { espid, is_open } = await request.json();
+  const { id, is_open } = await request.json();
   const open = is_open == "true" ? true : false;
 
   const date = new Date();
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   const sql_date = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
   await sql`INSERT INTO doors (time, espid, is_open) 
-            VALUES (${sql_date}, ${espid}, ${open});`;
+            VALUES (${sql_date}, ${id}, ${open});`;
 
   return NextResponse.json({ status: 200 });
 }
