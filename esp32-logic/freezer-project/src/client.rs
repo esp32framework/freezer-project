@@ -8,7 +8,7 @@ use esp32framework::{
         BleClient, BleError, BleId,
     },
     esp32_framework_error::Esp32FrameworkError,
-    gpio::digital::{DigitalOut, InterruptType},
+    gpio::{analog::AnalogOut, digital::{DigitalOut, InterruptType}},
     timer_driver::TimerDriver,
     Microcontroller,
 };
@@ -99,23 +99,27 @@ fn get_server_characteristic(
 
 fn handle_door(
     opened: Level,
-    led: &mut DigitalOut,
+    led: &mut AnalogOut,
     alarm: &Rc<RefCell<DigitalOut>>,
     timer_driver: &mut TimerDriver,
     door_char: &Rc<RefCell<RemoteCharacteristic>>,
-) {
+)-> Result<(), Esp32FrameworkError> {
     match opened {
-        Level::Low => timer_driver.enable().unwrap(),
+        Level::Low => {
+            timer_driver.enable()?;
+            led.start_increasing_bounce_back(100, 0.05, 0.0, None)?;
+        },
         Level::High => {
-            timer_driver.disable().unwrap();
+            timer_driver.disable()?;
             let mut alarm = alarm.borrow_mut();
             if alarm.get_level() == Level::High {
-                door_char.borrow_mut().write(&[false as u8]).unwrap();
-                alarm.set_low().unwrap();
+                door_char.borrow_mut().write(&[false as u8])?;
+                alarm.set_low()?;
             }
+            led.set_low()?;
         }
     }
-    led.toggle().unwrap();
+    Ok(())
 }
 
 fn alarm_trigger(door_char: &Rc<RefCell<RemoteCharacteristic>>, alarm: &Rc<RefCell<DigitalOut>>) {
@@ -129,7 +133,7 @@ fn set_alarm(
     door_characteristic: RemoteCharacteristic,
 ) -> Result<(), Esp32FrameworkError> {
     let mut door = micro.set_pin_as_digital_in(DOOR_PIN)?;
-    let mut led = micro.set_pin_as_digital_out(LED_PIN)?;
+    let mut led = micro.set_pin_as_default_analog_out(LED_PIN)?;
     let mut timer_driver = micro.get_timer_driver()?;
     let alarm = micro.set_pin_as_digital_out(ALARM_PIN)?;
 
@@ -145,30 +149,29 @@ fn set_alarm(
         alarm_trigger(&sharable_door_char, &sharable_alarm)
     });
     door.trigger_on_interrupt(
-        move |level| {
+        move |level| 
             handle_door(
                 level,
                 &mut led,
                 &sharable_alarm_ref,
                 &mut timer_driver,
                 &sharable_door_char_ref,
-            )
-        },
+            ).unwrap(),
         InterruptType::AnyEdgeNextEdgeIsNeg,
     )?;
     Ok(())
 }
 
-fn main() {
+fn main()-> Result<(), Esp32FrameworkError>{
     let mut micro = Microcontroller::take();
 
-    let mut client = initialize_ble_client(&mut micro).unwrap();
+    let mut client = initialize_ble_client(&mut micro)?;
     let (mut sensor_characteristics, door_characteristic) =
-        get_server_characteristic(&mut client).unwrap();
+        get_server_characteristic(&mut client)?;
 
-    set_alarm(&mut micro, door_characteristic).unwrap();
+    set_alarm(&mut micro, door_characteristic)?;
 
-    let mut sensor = create_bme280(&mut micro, SENSOR_SDA_PIN, SENSOR_SCL_PIN).unwrap();
+    let mut sensor = create_bme280(&mut micro, SENSOR_SDA_PIN, SENSOR_SCL_PIN)?;
     let mut delay = Delay::new(MEASUREMENT_DELAY.as_millis() as u32);
 
     loop {

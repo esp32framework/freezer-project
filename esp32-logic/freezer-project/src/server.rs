@@ -2,17 +2,15 @@ use esp32framework::{
     ble::{
         utils::{ble_standard_uuids::StandardCharacteristicId, Characteristic, Service},
         BleError, BleId, BleServer,
-    },
-    wifi::{
+    }, esp32_framework_error::Esp32FrameworkError, wifi::{
         http::{Http, HttpError, HttpHeader, HttpHeaderType, HttpsClient},
         WifiDriver, WifiError,
-    },
-    Microcontroller,
+    }, Microcontroller
 };
 
 const ADVERTISING_NAME: &str = "FreezzerServer";
-const SSID: &str = "WIFI SSID";
-const PASSWORD: &str = "password";
+const SSID: &str = "Fibertel WiFi588 2.4GHz";
+const PASSWORD: &str = "0041675097";
 const MEASUREMENT_URI: &str = "https://freezer-project.vercel.app/api/esp-data/post";
 const ALERT_URI: &str = "https://freezer-project.vercel.app/api/door/post";
 const SEND_RATE: u32 = 2000;
@@ -171,18 +169,18 @@ fn send_all_data(https_client: &mut HttpsClient, data: Vec<ClientData>) -> Resul
     Ok(())
 }
 
-pub fn main() {
+pub fn main()->Result<(), Esp32FrameworkError> {
     let mut micro = Microcontroller::take();
-    let mut server = initialize_ble_server(&mut micro).unwrap();
-    let (_wifi, mut https_client) = initialize_wifi_connection(&mut micro).unwrap();
+    let mut server = initialize_ble_server(&mut micro)?;
+    let (_wifi, mut https_client) = initialize_wifi_connection(&mut micro)?;
 
-    server.start().unwrap();
+    server.start()?;
 
     loop {
         micro.wait_for_updates(Some(SEND_RATE));
 
-        let data = gather_data(&mut server).unwrap();
+        let data = gather_data(&mut server)?;
         data.iter().for_each(|d| d.print());
-        send_all_data(&mut https_client, data).unwrap();
+        send_all_data(&mut https_client, data)?;
     }
 }
