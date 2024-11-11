@@ -77,7 +77,7 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   );
 
   const title = "Promedios ESP-" + espid;
-  const popupText = "Heladera " + espid + " abierta hace mas de 5 minutos";
+  const popupText = "Heladera " + espid + " abierta.";
 
   const [anchorEl, setAnchorEl] = useState<SVGSVGElement | null>(null);
 

@@ -62,14 +62,20 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
 
   // Filtrar datos
   const filteredData = lastValues.measurements.filter((measurement) => {
-    const espidMatch = measurement.espid.toString().includes(espidFilter);
+    const espidMatch = espidFilter === "" || measurement.espid.toString().includes(espidFilter);
+    
     const temperatureMatch =
-    (minTemp === "" && maxTemp === "") || (measurement.temperature >= Number(minTemp) && measurement.temperature <= Number(maxTemp)) || (minTemp === "" && measurement.temperature <= Number(maxTemp)) || (maxTemp === "" && measurement.temperature >= Number(minTemp));
+      (minTemp === "" || measurement.temperature >= Number(minTemp)) &&
+      (maxTemp === "" || measurement.temperature <= Number(maxTemp));
+    
     const pressureMatch =
-    (minPress === "" && maxPress === "") || (measurement.pressure >= Number(minPress) && measurement.pressure <= Number(maxPress)) || (minPress === "" && measurement.pressure <= Number(maxPress)) || (maxPress === "" && measurement.pressure >= Number(minPress));
+      (minPress === "" || measurement.pressure >= Number(minPress)) &&
+      (maxPress === "" || measurement.pressure <= Number(maxPress));
+    
     const humidityMatch =
-    (minHum === "" && maxHum === "") || (measurement.humidity >= Number(minHum) && measurement.humidity <= Number(maxHum)) || (minHum === "" && measurement.humidity <= Number(maxHum)) || (maxHum === "" && measurement.humidity >= Number(minHum));
-
+      (minHum === "" || measurement.humidity >= Number(minHum)) &&
+      (maxHum === "" || measurement.humidity <= Number(maxHum));
+  
     return espidMatch && temperatureMatch && pressureMatch && humidityMatch;
   });
 
@@ -156,8 +162,8 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
             <TableBody>
               {filteredData.map((measurement) => (
                 <TableRow
-                  key={measurement.time.getTime()}
-                  sx={{ borderBottom: "2px solid", borderColor: "divider" }}
+                key={measurement.time.getTime()}
+                sx={{ borderBottom: "2px solid", borderColor: "divider" }}
                 >
                   <TableCell sx={{ textAlign: "center" }}>
                     <Typography sx={{ fontSize: "15px", fontWeight: "500" }}>
