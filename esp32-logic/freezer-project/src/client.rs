@@ -15,7 +15,7 @@ use esp32framework::{
 use esp_idf_svc::hal::{delay::Delay, gpio::Level};
 use setup_bme280::*;
 
-const SERVER_NAME: &str = "FreezzerServer";
+const SERVER_NAME: &str = "FreezerServer";
 const SERVICE_ID: u16 = 0x1000;
 const ESP_ID: u16 = 1;
 const DOOR_DEBOUNCE: u64 = 200_000;

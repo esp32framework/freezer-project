@@ -8,9 +8,9 @@ use esp32framework::{
     }, Microcontroller
 };
 
-const ADVERTISING_NAME: &str = "FreezzerServer";
-const SSID: &str = "Fibertel WiFi588 2.4GHz";
-const PASSWORD: &str = "0041675097";
+const ADVERTISING_NAME: &str = "FreezerServer";
+const SSID: &str = "WIFI_SSID";
+const PASSWORD: &str = "WIFI_PASS";
 const MEASUREMENT_URI: &str = "https://freezer-project.vercel.app/api/esp-data/post";
 const ALERT_URI: &str = "https://freezer-project.vercel.app/api/door/post";
 const SEND_RATE: u32 = 2000;
@@ -133,7 +133,7 @@ fn create_services() -> Result<Vec<Service>, BleError> {
 fn initialize_ble_server<'a>(micro: &mut Microcontroller<'a>) -> Result<BleServer<'a>, BleError> {
     let services = create_services()?;
     let mut server = micro.ble_server(ADVERTISING_NAME.to_string(), &services)?;
-    server.connection_handler(|server, _| server.start().unwrap());
+    server.set_max_concurrent_clients(AMOUNT_OF_CLIENTS as u8)?;
     Ok(server)
 }
 
