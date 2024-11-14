@@ -98,7 +98,7 @@ impl ClientData {
 
     fn try_send_door_data(&self, https_client: &mut HttpsClient) -> Result<(), HttpError> {
         if let Some(door) = self.door {
-            let send_data = format!("{{\"id\":{}, \"is_open\":{}}}", self.id, door);
+            let send_data = format!("{{\"id\":{}, \"is_open\":\"{}\"}}", self.id, door);
             self.send_http(https_client, ALERT_URI, send_data)?;
         }
         Ok(())
