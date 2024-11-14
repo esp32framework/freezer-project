@@ -91,8 +91,6 @@ export default function DropDownFilters({
     setAnchorEl(null);
   };
 
-
-
   return (
     <div>
       <Button

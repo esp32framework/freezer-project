@@ -15,7 +15,7 @@ const INTERVAL_OPTIONS = {
 
 async function fetchData(): Promise<MeasurementsResponse> {
   try {
-    const response = await fetch("/api/esp-data/get", { cache: "no-store" });
+    const response = await fetch("/api/esp-data/get-all", { cache: "no-store" });
     if (!response.ok) throw new Error("Error fetching data");
     const data = await response.json();
 

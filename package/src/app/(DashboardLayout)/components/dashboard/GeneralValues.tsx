@@ -3,6 +3,7 @@ import { Select, MenuItem } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DashboardCard from '@/app/(DashboardLayout)/components/shared/DashboardCard';
 import dynamic from "next/dynamic";
+import { red } from '@mui/material/colors';
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const AMOUNT_OF_DAYS = 8;
@@ -23,6 +24,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
     const theme = useTheme();
     const primary = theme.palette.primary.main;
     const secondary = theme.palette.secondary.main;
+    const tertiary = theme.palette.success.main;
 
     const optionscolumnchart: any = {
         chart: {
@@ -34,7 +36,7 @@ const GeneralValues: React.FC<GeneralValuesProps> = ({ lastValues }) => {
             },
             height: 370,
         },
-        colors: [primary, secondary],
+        colors: ['#1BA0F2', '#1F54BF', '#5FBBC2'],
         xaxis: {
             type: 'datetime',  // Asegura que el eje x interprete los valores de tiempo
             axisBorder: {
