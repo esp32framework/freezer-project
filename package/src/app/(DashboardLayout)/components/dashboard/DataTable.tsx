@@ -23,9 +23,6 @@ interface DataTableProps {
 const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
   // Estados de filtros
   const [espidFilter, setEspidFilter] = useState<string>("");
-  const [temperatureFilter, setTemperatureFilter] = useState<number | "">("");
-  const [pressureFilter, setPressureFilter] = useState<number | "">("");
-  const [humidityFilter, setHumidityFilter] = useState<number | "">("");
   const [minTemp, setMinTemp] = useState<number | "">("");
   const [maxTemp, setMaxTemp] = useState<number | "">("");
   const [minPress, setMinPress] = useState<number | "">("");
@@ -62,15 +59,15 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
 
   // Filtrar datos
   const filteredData = lastValues.measurements.filter((measurement) => {
-    const espidMatch = espidFilter === "" || measurement.espid.toString().includes(espidFilter);
+    const espidMatch = (espidFilter === "") || (measurement.espid.toString().includes(espidFilter));
     
     const temperatureMatch =
-      (minTemp === "" || measurement.temperature >= Number(minTemp)) &&
-      (maxTemp === "" || measurement.temperature <= Number(maxTemp));
+      ((minTemp === "") || (measurement.temperature >= Number(minTemp))) &&
+      ((maxTemp === "") || measurement.temperature <= Number(maxTemp));
     
     const pressureMatch =
-      (minPress === "" || measurement.pressure >= Number(minPress)) &&
-      (maxPress === "" || measurement.pressure <= Number(maxPress));
+      ((minPress === "") || measurement.pressure >= Number(minPress)) &&
+      ((maxPress === "") || measurement.pressure <= Number(maxPress));
     
     const humidityMatch =
       (minHum === "" || measurement.humidity >= Number(minHum)) &&
@@ -78,6 +75,8 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
   
     return espidMatch && temperatureMatch && pressureMatch && humidityMatch;
   });
+
+  console.log("Filtered: ", filteredData);
 
   return (
     <DashboardCard>
@@ -160,14 +159,14 @@ const DataTable: React.FC<DataTableProps> = ({ lastValues }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredData.map((measurement) => (
+              {filteredData.map((measurement, index) => (
                 <TableRow
-                key={measurement.time.getTime()}
+                key={index}
                 sx={{ borderBottom: "2px solid", borderColor: "divider" }}
                 >
                   <TableCell sx={{ textAlign: "center" }}>
-                    <Typography sx={{ fontSize: "15px", fontWeight: "500" }}>
-                      {measurement.espid}
+                      <Typography sx={{ fontSize: "15px", fontWeight: "500" }}>
+                      {measurement.espid} 
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ textAlign: "center" }}>

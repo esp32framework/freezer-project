@@ -93,8 +93,21 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
   // const open = true;
   const id = open ? "simple-popover" : undefined;
 
-  const showDoorIcon = 
-  (doorsDataResponse == null || doorsDataResponse.doors_data.length) == 0 ? false : doorsDataResponse?.doors_data.filter((doorData) => doorData.espid == Number(espid))[0].is_open; 
+  console.log("Doors: ", doorsDataResponse);
+
+  let showDoorIcon: boolean;
+  if (doorsDataResponse == null || doorsDataResponse.doors_data.length == 0) {
+    showDoorIcon = false;
+  } else {
+    const filteredDoorsData = doorsDataResponse.doors_data.filter(
+      (doorData) => doorData.espid == Number(espid)
+    );
+    if (filteredDoorsData.length == 0) {
+      showDoorIcon = false;
+    } else {
+      showDoorIcon = filteredDoorsData[0].is_open;
+    }
+  }
 
   return (
     <DashboardCard>
@@ -111,27 +124,26 @@ const AvgTemperature: React.FC<AvgTemperatureProps> = ({
               {title}
             </Typography>
             {showDoorIcon && (
-            <Badge
-              badgeContent={
-                <span style={{ fontSize: "1.0rem", color: "white" }}>!</span>
-              }
-              sx={{
-                "& .MuiBadge-badge": {
-                  backgroundColor: "#DC143C",
-                  color: "white",
-                },
-              }}
-            >
-              <IconDoor
-              width={20}
-              color="black"
-              aria-describedby={id}
-              onClick={handleClick} // Utiliza el tipo de evento correcto
-              />
-            
-            </Badge>
+              <Badge
+                badgeContent={
+                  <span style={{ fontSize: "1.0rem", color: "white" }}>!</span>
+                }
+                sx={{
+                  "& .MuiBadge-badge": {
+                    backgroundColor: "#DC143C",
+                    color: "white",
+                  },
+                }}
+              >
+                <IconDoor
+                  width={20}
+                  color="black"
+                  aria-describedby={id}
+                  onClick={handleClick} // Utiliza el tipo de evento correcto
+                />
+              </Badge>
             )}
-            
+
             <Popover
               id={id}
               open={open}
